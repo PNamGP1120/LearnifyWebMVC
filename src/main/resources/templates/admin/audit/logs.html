@@ -1,0 +1,20 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layouts/base :: head-resources"></head>
+<body>
+<div th:replace="layouts/base :: content">
+    <h2>Nhật ký hệ thống</h2>
+    <table class="table table-striped">
+        <thead><tr><th>ID</th><th>Người dùng</th><th>Hành động</th><th>Thời gian</th></tr></thead>
+        <tbody>
+        <tr th:each="log : ${logs}">
+            <td th:text="${log.id}"></td>
+            <td th:text="${log.user.email}"></td>
+            <td th:text="${log.action}"></td>
+            <td th:text="${#dates.format(log.timestamp, 'dd/MM/yyyy HH:mm')}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

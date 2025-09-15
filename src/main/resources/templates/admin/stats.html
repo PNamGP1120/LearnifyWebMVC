@@ -1,0 +1,226 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <h2 class="my-4">📊 Thống kê hệ thống</h2>
+
+        <!-- ===== Cards tổng quan ===== -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card bg-info text-white mb-3 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Người dùng</h5>
+                        <p class="card-text display-6"
+                           th:text="${#aggregates.sum(stats.usersByRole.values())}">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark mb-3 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Giảng viên chờ duyệt</h5>
+                        <p class="card-text display-6" th:text="${stats.pendingInstructors}">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white mb-3 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Khoá học</h5>
+                        <p class="card-text display-6"
+                           th:text="${#aggregates.sum(stats.coursesByStatus.values())}">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-secondary text-white mb-3 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Thông báo</h5>
+                        <p class="card-text display-6" th:text="${stats.notificationsCount}">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Doanh thu theo tháng ===== -->
+        <div class="card shadow mt-4">
+            <div class="card-header"><h5>Doanh thu theo tháng</h5></div>
+            <div class="card-body"><canvas id="revenueChart" height="100"></canvas></div>
+        </div>
+
+        <!-- ===== Người dùng theo vai trò ===== -->
+        <h4 class="mt-5">Người dùng theo vai trò</h4>
+        <table class="table table-bordered">
+            <thead><tr><th>Vai trò</th><th>Số lượng</th></tr></thead>
+            <tbody>
+            <tr th:each="entry : ${stats.usersByRole}">
+                <td th:text="${entry.key}"></td>
+                <td th:text="${entry.value}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <canvas id="usersByRoleChart" height="100"></canvas>
+
+        <!-- ===== Người dùng đăng ký theo tháng ===== -->
+        <h4 class="mt-5">Người dùng đăng ký theo tháng</h4>
+        <table class="table table-bordered">
+            <thead><tr><th>Tháng</th><th>Số lượng</th></tr></thead>
+            <tbody>
+            <tr th:each="r : ${stats.userRegistrationsByMonth}">
+                <td th:text="${r[0]}"></td>
+                <td th:text="${r[1]}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <canvas id="userRegistrationsChart" height="100"></canvas>
+
+        <!-- ===== Khoá học theo danh mục ===== -->
+        <h4 class="mt-5">Khoá học theo danh mục</h4>
+        <table class="table table-bordered">
+            <thead><tr><th>Danh mục</th><th>Số lượng</th></tr></thead>
+            <tbody>
+            <tr th:each="c : ${stats.coursesByCategory}">
+                <td th:text="${c[0]}"></td>
+                <td th:text="${c[1]}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <canvas id="coursesByCategoryChart" height="100"></canvas>
+
+        <!-- ===== Ghi danh theo khoá học ===== -->
+        <h4 class="mt-5">Ghi danh theo khoá học</h4>
+        <table class="table table-bordered">
+            <thead><tr><th>Khoá học</th><th>Số ghi danh</th></tr></thead>
+            <tbody>
+            <tr th:each="c : ${stats.enrollmentsByCourse}">
+                <td th:text="${c[0]}"></td>
+                <td th:text="${c[1]}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <canvas id="enrollmentsByCourseChart" height="100"></canvas>
+
+        <!-- ===== Người dùng theo khoá học (trung gian) ===== -->
+        <h4 class="mt-5">Người dùng theo khoá học</h4>
+        <table class="table table-bordered">
+            <thead><tr><th>Khoá học</th><th>Số người dùng</th></tr></thead>
+            <tbody>
+            <tr th:each="c : ${stats.usersByCourse}">
+                <td th:text="${c[0]}"></td>
+                <td th:text="${c[1]}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <canvas id="usersByCourseChart" height="100"></canvas>
+
+        <!-- ===== Khoá học theo người dùng (trung gian) ===== -->
+        <h4 class="mt-5">Khoá học theo người dùng</h4>
+        <table class="table table-bordered">
+            <thead><tr><th>Người dùng</th><th>Số khoá học</th></tr></thead>
+            <tbody>
+            <tr th:each="c : ${stats.coursesByUser}">
+                <td th:text="${c[0]}"></td>
+                <td th:text="${c[1]}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <canvas id="coursesByUserChart" height="100"></canvas>
+
+        <!-- ===== Giảng viên theo danh mục (trung gian) ===== -->
+        <h4 class="mt-5">Giảng viên theo danh mục</h4>
+        <table class="table table-bordered">
+            <thead><tr><th>Danh mục</th><th>Số giảng viên</th></tr></thead>
+            <tbody>
+            <tr th:each="c : ${stats.instructorsByCategory}">
+                <td th:text="${c[0]}"></td>
+                <td th:text="${c[1]}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <canvas id="instructorsByCategoryChart" height="100"></canvas>
+
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    // Doanh thu theo tháng
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels: [[${stats.revenueMonths}]],
+            datasets: [{ label: 'Doanh thu', data: [[${stats.revenueValues}]], backgroundColor: '#17a2b8' }]
+        }
+    });
+
+    // Người dùng theo vai trò
+    new Chart(document.getElementById('usersByRoleChart'), {
+        type: 'pie',
+        data: {
+            labels: [[${stats.usersByRole.keySet()}]],
+            datasets: [{ data: [[${stats.usersByRole.values()}]], backgroundColor: ['#007bff','#28a745','#ffc107'] }]
+        }
+    });
+
+    // Đăng ký user theo tháng
+    new Chart(document.getElementById('userRegistrationsChart'), {
+        type: 'line',
+        data: {
+            labels: [[${#lists.map(stats.userRegistrationsByMonth, r->r[0])}]],
+            datasets: [{ label: 'Đăng ký', data: [[${#lists.map(stats.userRegistrationsByMonth, r->r[1])}]], borderColor: '#007bff', fill: true }]
+        }
+    });
+
+    // Courses by Category
+    new Chart(document.getElementById('coursesByCategoryChart'), {
+        type: 'bar',
+        data: {
+            labels: [[${#lists.map(stats.coursesByCategory, c->c[0])}]],
+            datasets: [{ data: [[${#lists.map(stats.coursesByCategory, c->c[1])}]], backgroundColor: '#28a745' }]
+        }
+    });
+
+    // Enrollments by Course
+    new Chart(document.getElementById('enrollmentsByCourseChart'), {
+        type: 'bar',
+        data: {
+            labels: [[${#lists.map(stats.enrollmentsByCourse, c->c[0])}]],
+            datasets: [{ data: [[${#lists.map(stats.enrollmentsByCourse, c->c[1])}]], backgroundColor: '#ffc107' }]
+        }
+    });
+
+    // Users by Course
+    new Chart(document.getElementById('usersByCourseChart'), {
+        type: 'bar',
+        data: {
+            labels: [[${#lists.map(stats.usersByCourse, c->c[0])}]],
+            datasets: [{ data: [[${#lists.map(stats.usersByCourse, c->c[1])}]], backgroundColor: '#20c997' }]
+        }
+    });
+
+    // Courses by User
+    new Chart(document.getElementById('coursesByUserChart'), {
+        type: 'bar',
+        data: {
+            labels: [[${#lists.map(stats.coursesByUser, c->c[0])}]],
+            datasets: [{ data: [[${#lists.map(stats.coursesByUser, c->c[1])}]], backgroundColor: '#6f42c1' }]
+        }
+    });
+
+    // Instructors by Category
+    new Chart(document.getElementById('instructorsByCategoryChart'), {
+        type: 'bar',
+        data: {
+            labels: [[${#lists.map(stats.instructorsByCategory, c->c[0])}]],
+            datasets: [{ data: [[${#lists.map(stats.instructorsByCategory, c->c[1])}]], backgroundColor: '#fd7e14' }]
+        }
+    });
+/*]]>*/
+</script>
+</body>
+</html>

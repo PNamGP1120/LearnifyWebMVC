@@ -1,0 +1,45 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+  <div th:fragment="content">
+
+    <h2 class="my-4" th:text="${enrollment.id == null ? '➕ Thêm Enrollment' : '✏️ Sửa Enrollment'}"></h2>
+
+    <form th:action="@{/admin/enrollments/save}" th:object="${enrollment}" method="post" class="card p-4 shadow">
+
+      <input type="hidden" th:field="*{id}"/>
+
+      <div class="mb-3">
+        <label class="form-label">Ngày ghi danh</label>
+        <input type="date" class="form-control" th:field="*{enrolledAt}"/>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Trạng thái</label>
+        <select class="form-select" th:field="*{accessStatus}">
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="EXPIRED">EXPIRED</option>
+          <option value="CANCELED">CANCELED</option>
+        </select>
+      </div>
+
+      <!-- Gắn Course và Student (cần load list từ controller nếu muốn chọn dropdown) -->
+      <div class="mb-3">
+        <label class="form-label">ID Khoá học</label>
+        <input type="text" class="form-control" th:field="*{courseId.id}" placeholder="Nhập Course ID"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">ID Học viên</label>
+        <input type="text" class="form-control" th:field="*{studentId.id}" placeholder="Nhập Student ID"/>
+      </div>
+
+      <button type="submit" class="btn btn-success">💾 Lưu</button>
+      <a class="btn btn-secondary" th:href="@{/admin/enrollments}">Hủy</a>
+    </form>
+
+  </div>
+</div>
+</body>
+</html>

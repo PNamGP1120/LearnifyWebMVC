@@ -1,0 +1,24 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layouts/base :: head-resources"></head>
+<body>
+<div th:replace="layouts/base :: content">
+    <h2>Danh sách Giao dịch</h2>
+    <table class="table table-striped">
+        <thead><tr><th>ID</th><th>Học viên</th><th>Khoá học</th><th>Số tiền</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+        <tbody>
+        <tr th:each="p : ${payments}">
+            <td th:text="${p.id}"></td>
+            <td th:text="${p.student.email}"></td>
+            <td th:text="${p.course.title}"></td>
+            <td th:text="${p.amount}"></td>
+            <td th:text="${p.status}"></td>
+            <td>
+                <a th:href="@{'/admin/payments/' + ${p.id}}" class="btn btn-sm btn-info">Chi tiết</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
