@@ -1,0 +1,29 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layouts/base :: head-resources"></head>
+<body>
+<div th:replace="layouts/base :: content">
+    <h2>Cấu hình hệ thống</h2>
+    <form th:action="@{/admin/settings/save}" th:object="${settings}" method="post">
+        <div class="mb-3">
+            <label>Logo URL</label>
+            <input type="text" class="form-control" th:field="*{logoUrl}">
+        </div>
+        <div class="mb-3">
+            <label>Email hệ thống</label>
+            <input type="email" class="form-control" th:field="*{systemEmail}">
+        </div>
+        <div class="mb-3">
+            <label>Phương thức thanh toán mặc định</label>
+            <select class="form-select" th:field="*{defaultPayment}">
+                <option value="PAYPAL">PayPal</option>
+                <option value="STRIPE">Stripe</option>
+                <option value="MOMO">Momo</option>
+                <option value="ZALOPAY">ZaloPay</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu cấu hình</button>
+    </form>
+</div>
+</body>
+</html>

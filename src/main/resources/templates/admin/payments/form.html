@@ -1,0 +1,21 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layouts/base :: head-resources"></head>
+<body>
+<div th:replace="layouts/base :: content">
+    <h2>Cập nhật Giao dịch</h2>
+    <form th:action="@{/admin/payments/save}" th:object="${payment}" method="post">
+        <input type="hidden" th:field="*{id}">
+        <div class="mb-3">
+            <label>Trạng thái</label>
+            <select class="form-select" th:field="*{status}">
+                <option value="PENDING">PENDING</option>
+                <option value="SUCCESS">SUCCESS</option>
+                <option value="FAILED">FAILED</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+    </form>
+</div>
+</body>
+</html>

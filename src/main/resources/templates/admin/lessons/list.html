@@ -1,0 +1,54 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+  <div th:fragment="content">
+    <h2 class="my-4">📖 Danh sách bài học</h2>
+
+    <a class="btn btn-primary mb-3"
+       th:href="@{/admin/sections/{id}/lessons/new(id=${sectionId})}">
+      ➕ Thêm bài học
+    </a>
+
+    <table class="table table-bordered table-hover shadow">
+      <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Tiêu đề</th>
+        <th>Loại nội dung</th>
+        <th>Thời lượng</th>
+        <th>Xem trước</th>
+        <th>Thứ tự</th>
+        <th>Hành động</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="l : ${lessons}">
+        <td th:text="${l.id}"></td>
+        <td>
+          <a th:href="@{/admin/lessons/{id}(id=${l.id})}" th:text="${l.title}"></a>
+        </td>
+        <td th:text="${l.contentType}"></td>
+        <td th:text="${l.durationMin + ' phút'}"></td>
+        <td>
+          <span th:if="${l.previewable}" class="badge bg-success">Có</span>
+          <span th:unless="${l.previewable}" class="badge bg-secondary">Không</span>
+        </td>
+        <td th:text="${l.orderIndex}"></td>
+        <td>
+          <a class="btn btn-sm btn-warning"
+             th:href="@{/admin/lessons/edit/{id}(id=${l.id})}">Sửa</a>
+          <form th:action="@{/admin/lessons/delete/{id}(id=${l.id})}"
+                method="post" class="d-inline">
+            <button class="btn btn-sm btn-danger">Xóa</button>
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+</body>
+</html>

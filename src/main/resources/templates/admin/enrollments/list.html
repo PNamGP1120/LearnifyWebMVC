@@ -1,0 +1,48 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+  <div th:fragment="content">
+
+    <h2 class="my-4">📖 Quản lý Ghi danh (Enrollments)</h2>
+
+    <div class="mb-3">
+      <a class="btn btn-primary" th:href="@{/admin/enrollments/new}">➕ Thêm Enrollment</a>
+    </div>
+
+    <table class="table table-bordered table-striped shadow">
+      <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Học viên</th>
+        <th>Khoá học</th>
+        <th>Ngày ghi danh</th>
+        <th>Trạng thái</th>
+        <th>Hành động</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="e : ${enrollments}">
+        <td th:text="${e.id}"></td>
+        <td th:text="${e.studentId.fullName}"></td>
+        <td th:text="${e.courseId.title}"></td>
+        <td th:text="${#dates.format(e.enrolledAt,'dd/MM/yyyy')}"></td>
+        <td>
+          <span th:if="${e.accessStatus == 'ACTIVE'}" class="badge bg-success">ACTIVE</span>
+          <span th:if="${e.accessStatus == 'EXPIRED'}" class="badge bg-warning">EXPIRED</span>
+          <span th:if="${e.accessStatus == 'CANCELED'}" class="badge bg-danger">CANCELED</span>
+        </td>
+        <td>
+          <a th:href="@{/admin/enrollments/{id}(id=${e.id})}" class="btn btn-info btn-sm">🔍 Xem</a>
+          <a th:href="@{/admin/enrollments/delete/{id}(id=${e.id})}" class="btn btn-danger btn-sm"
+             onclick="return confirm('Bạn chắc muốn xoá?')">🗑 Xoá</a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+</body>
+</html>

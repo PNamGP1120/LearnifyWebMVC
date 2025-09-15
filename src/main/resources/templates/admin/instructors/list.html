@@ -1,0 +1,45 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+  <div th:fragment="content">
+
+    <h2 class="my-4">Danh sách giảng viên</h2>
+
+    <table class="table table-striped table-hover shadow">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Họ tên</th>
+          <th>Email</th>
+          <th>Chứng chỉ</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="i : ${instructors}">
+          <td th:text="${i.userId}"></td>
+          <td th:text="${i.user.fullName}"></td>
+          <td th:text="${i.user.email}"></td>
+          <td th:text="${i.certifications} ?: 'Chưa cập nhật'"></td>
+          <td>
+            <span th:if="${i.verifiedByAdmin}" class="badge bg-success">Đã duyệt</span>
+            <span th:if="${!i.verifiedByAdmin}" class="badge bg-warning">Chờ duyệt</span>
+          </td>
+          <td>
+            <a class="btn btn-sm btn-info" th:href="@{/admin/instructors/{id}(id=${i.userId})}">Chi tiết</a>
+            <a class="btn btn-sm btn-success" th:if="${!i.verifiedByAdmin}"
+               th:href="@{/admin/instructors/verify/{id}(id=${i.userId})}">Duyệt</a>
+            <a class="btn btn-sm btn-danger" th:href="@{/admin/instructors/delete/{id}(id=${i.userId})}"
+               onclick="return confirm('Xóa giảng viên này?');">Xóa</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+</body>
+</html>

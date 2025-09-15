@@ -1,0 +1,31 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Đăng nhập | Learnify Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <h2 class="text-center mb-4">Đăng nhập Quản trị</h2>
+
+            <div th:if="${param.error}" class="alert alert-danger">Sai tài khoản hoặc mật khẩu</div>
+            <div th:if="${param.logout}" class="alert alert-success">Đăng xuất thành công</div>
+
+            <form th:action="@{/doLogin}" method="post">
+                <div class="mb-3">
+                    <label>Tài khoản</label>
+                    <input type="text" class="form-control" name="username" placeholder="Nhập username hoặc email">
+                </div>
+                <div class="mb-3">
+                    <label>Mật khẩu</label>
+                    <input type="password" class="form-control" name="password" placeholder="Nhập mật khẩu">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
