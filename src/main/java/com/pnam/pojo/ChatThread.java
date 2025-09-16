@@ -1,37 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-/**
- *
- * @author pnam
- */
 @Entity
 @Table(name = "chat_thread")
 @XmlRootElement
@@ -39,38 +16,42 @@ import java.util.Set;
     @NamedQuery(name = "ChatThread.findAll", query = "SELECT c FROM ChatThread c"),
     @NamedQuery(name = "ChatThread.findById", query = "SELECT c FROM ChatThread c WHERE c.id = :id"),
     @NamedQuery(name = "ChatThread.findByType", query = "SELECT c FROM ChatThread c WHERE c.type = :type"),
-    @NamedQuery(name = "ChatThread.findByCreatedAt", query = "SELECT c FROM ChatThread c WHERE c.createdAt = :createdAt")})
+    @NamedQuery(name = "ChatThread.findByCreatedAt", query = "SELECT c FROM ChatThread c WHERE c.createdAt = :createdAt")
+})
 public class ChatThread implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "id")
     private Long id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 6)
-    @Column(name = "type")
+
+    @NotBlank(message = "{chatThread.type.notBlank}")
+    @Size(max = 6, message = "{chatThread.type.size}")
+    @Column(name = "type", nullable = false, length = 6)
     private String type;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "created_at")
+
+    @NotNull(message = "{chatThread.createdAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", nullable = false)
     private Date createdAt;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "threadId")
+
+    @OneToMany(mappedBy = "threadId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<ChatMessage> chatMessageSet;
-    @JoinColumn(name = "course_id", referencedColumnName = "id")
+
     @ManyToOne
+    @JoinColumn(name = "course_id", referencedColumnName = "id")
     @JsonIgnore
     private Course courseId;
-    @JoinColumn(name = "user_a", referencedColumnName = "id")
+
     @ManyToOne(optional = false)
+    @JoinColumn(name = "user_a", referencedColumnName = "id")
     @JsonIgnore
     private User userA;
-    @JoinColumn(name = "user_b", referencedColumnName = "id")
+
     @ManyToOne(optional = false)
+    @JoinColumn(name = "user_b", referencedColumnName = "id")
     @JsonIgnore
     private User userB;
 
@@ -168,5 +149,5 @@ public class ChatThread implements Serializable {
     public String toString() {
         return "com.pnam.pojo.ChatThread[ id=" + id + " ]";
     }
-    
+
 }

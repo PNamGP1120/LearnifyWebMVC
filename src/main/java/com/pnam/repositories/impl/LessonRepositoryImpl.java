@@ -1,59 +1,81 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.repositories.impl;
 
 import com.pnam.pojo.Lesson;
 import com.pnam.repositories.LessonRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import java.util.List;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- *
- * @author pnam
- */
+import java.util.List;
+import java.util.Map;
+
 @Repository
 @Transactional
 public class LessonRepositoryImpl implements LessonRepository {
-    @Autowired
-    private LocalSessionFactoryBean factory;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
-    public Lesson findById(Long id) {
-        return factory.getObject().getCurrentSession().find(Lesson.class, id);
-    }
+    public List<Lesson> getLessons(Map<String, String> params) {
+        String jpql = "SELECT l FROM Lesson l WHERE 1=1";
 
-    @Override
-    public List<Lesson> findBySection(Long sectionId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<Lesson> q = s.createQuery(
-            "SELECT l FROM Lesson l WHERE l.sectionId.id = :sid", Lesson.class);
-        q.setParameter("sid", sectionId);
+        String kw = params.get("kw");
+        if (kw != null && !kw.isEmpty()) {
+            jpql += " AND (l.title LIKE :kw OR l.contentUrl LIKE :kw)";
+        }
+
+        TypedQuery<Lesson> q = em.createQuery(jpql, Lesson.class);
+        if (kw != null && !kw.isEmpty()) {
+            q.setParameter("kw", "%" + kw + "%");
+        }
+
+        int page = params.get("page") != null ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = params.get("pageSize") != null ? Integer.parseInt(params.get("pageSize")) : 10;
+        q.setFirstResult((page - 1) * pageSize);
+        q.setMaxResults(pageSize);
+
         return q.getResultList();
     }
 
     @Override
-    public Lesson save(Lesson l) {
-        Session s = factory.getObject().getCurrentSession();
-        if (l.getId() == null) {
-            s.persist(l);
-            return l;
+    public long countLessons(Map<String, String> params) {
+        String jpql = "SELECT COUNT(l) FROM Lesson l WHERE 1=1";
+        String kw = params.get("kw");
+
+        if (kw != null && !kw.isEmpty()) {
+            jpql += " AND (l.title LIKE :kw OR l.contentUrl LIKE :kw)";
+        }
+
+        TypedQuery<Long> q = em.createQuery(jpql, Long.class);
+        if (kw != null && !kw.isEmpty()) {
+            q.setParameter("kw", "%" + kw + "%");
+        }
+
+        return q.getSingleResult();
+    }
+
+    @Override
+    public Lesson findById(Long id) {
+        return em.find(Lesson.class, id);
+    }
+
+    @Override
+    public void save(Lesson lesson) {
+        if (lesson.getId() == null) {
+            em.persist(lesson);
         } else {
-            return s.merge(l);
+            em.merge(lesson);
         }
     }
 
     @Override
     public void delete(Long id) {
-        Session s = factory.getObject().getCurrentSession();
-        Lesson l = s.find(Lesson.class, id);
-        if (l != null) s.remove(l);
+        Lesson l = findById(id);
+        if (l != null) {
+            em.remove(l);
+        }
     }
 }
-

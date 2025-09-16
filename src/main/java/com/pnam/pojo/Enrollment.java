@@ -1,37 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
-/**
- *
- * @author pnam
- */
 @Entity
 @Table(name = "enrollment")
 @XmlRootElement
@@ -39,37 +16,41 @@ import java.util.Set;
     @NamedQuery(name = "Enrollment.findAll", query = "SELECT e FROM Enrollment e"),
     @NamedQuery(name = "Enrollment.findById", query = "SELECT e FROM Enrollment e WHERE e.id = :id"),
     @NamedQuery(name = "Enrollment.findByEnrolledAt", query = "SELECT e FROM Enrollment e WHERE e.enrolledAt = :enrolledAt"),
-    @NamedQuery(name = "Enrollment.findByAccessStatus", query = "SELECT e FROM Enrollment e WHERE e.accessStatus = :accessStatus")})
+    @NamedQuery(name = "Enrollment.findByAccessStatus", query = "SELECT e FROM Enrollment e WHERE e.accessStatus = :accessStatus")
+})
 public class Enrollment implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "id")
     private Long id;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "enrolled_at")
+
+    @NotNull(message = "{enrollment.enrolledAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "enrolled_at", nullable = false)
     private Date enrolledAt;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 8)
-    @Column(name = "access_status")
+
+    @NotBlank(message = "{enrollment.accessStatus.notBlank}")
+    @Size(max = 8, message = "{enrollment.accessStatus.size}")
+    @Column(name = "access_status", nullable = false, length = 8)
     private String accessStatus;
-    @JoinColumn(name = "course_id", referencedColumnName = "id")
+
     @ManyToOne(optional = false)
+    @JoinColumn(name = "course_id", referencedColumnName = "id")
     @JsonIgnore
     private Course courseId;
-    @JoinColumn(name = "student_id", referencedColumnName = "id")
+
     @ManyToOne(optional = false)
+    @JoinColumn(name = "student_id", referencedColumnName = "id")
     @JsonIgnore
     private User studentId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "enrollmentId")
+
+    @OneToMany(mappedBy = "enrollmentId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Progress> progressSet;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "enrollmentId")
+
+    @OneToMany(mappedBy = "enrollmentId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Payment> paymentSet;
 
@@ -168,5 +149,5 @@ public class Enrollment implements Serializable {
     public String toString() {
         return "com.pnam.pojo.Enrollment[ id=" + id + " ]";
     }
-    
+
 }

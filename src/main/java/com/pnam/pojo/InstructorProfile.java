@@ -1,32 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- *
- * @author pnam
- */
 @Entity
 @Table(name = "instructor_profile")
 @XmlRootElement
@@ -35,34 +15,42 @@ import java.util.Date;
     @NamedQuery(name = "InstructorProfile.findByUserId", query = "SELECT i FROM InstructorProfile i WHERE i.userId = :userId"),
     @NamedQuery(name = "InstructorProfile.findByCertifications", query = "SELECT i FROM InstructorProfile i WHERE i.certifications = :certifications"),
     @NamedQuery(name = "InstructorProfile.findByVerifiedByAdmin", query = "SELECT i FROM InstructorProfile i WHERE i.verifiedByAdmin = :verifiedByAdmin"),
-    @NamedQuery(name = "InstructorProfile.findByVerifiedAt", query = "SELECT i FROM InstructorProfile i WHERE i.verifiedAt = :verifiedAt")})
+    @NamedQuery(name = "InstructorProfile.findByVerifiedAt", query = "SELECT i FROM InstructorProfile i WHERE i.verifiedAt = :verifiedAt")
+})
 public class InstructorProfile implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    // ===== USER_ID =====
     @Id
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "user_id")
+    @NotNull(message = "{instructorProfile.userId.notNull}")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    // ===== BIO =====
+    @Size(max = 65535, message = "{instructorProfile.bio.size}")
     @Lob
-    @Size(max = 65535)
-    @Column(name = "bio")
     private String bio;
-    @Size(max = 255)
-    @Column(name = "certifications")
+
+    // ===== CERTIFICATIONS =====
+    @Size(max = 255, message = "{instructorProfile.certifications.size}")
     private String certifications;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "verified_by_admin")
+
+    // ===== VERIFIED =====
+    @Column(name = "verified_by_admin", nullable = false)
     private boolean verifiedByAdmin;
-    @Column(name = "verified_at")
+
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_at")
     private Date verifiedAt;
-    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
+
+    // ===== RELATIONSHIP =====
     @OneToOne(optional = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private User user;
 
+    // ===== Constructors =====
     public InstructorProfile() {
     }
 
@@ -147,5 +135,5 @@ public class InstructorProfile implements Serializable {
     public String toString() {
         return "com.pnam.pojo.InstructorProfile[ userId=" + userId + " ]";
     }
-    
+
 }

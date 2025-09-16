@@ -1,79 +1,82 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.repositories.impl;
 
 import com.pnam.pojo.CourseRating;
 import com.pnam.repositories.CourseRatingRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import java.util.List;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- *
- * @author pnam
- */
+import java.util.List;
+import java.util.Map;
+
 @Repository
 @Transactional
 public class CourseRatingRepositoryImpl implements CourseRatingRepository {
-    @Autowired
-    private LocalSessionFactoryBean factory;
+
+    @PersistenceContext
+    private EntityManager em;
+
+    @Override
+    public List<CourseRating> getRatings(Map<String, String> params) {
+        String jpql = "SELECT r FROM CourseRating r WHERE 1=1";
+
+        String kw = params.get("kw");
+        if (kw != null && !kw.isEmpty()) {
+            jpql += " AND r.comment LIKE :kw";
+        }
+
+        TypedQuery<CourseRating> q = em.createQuery(jpql, CourseRating.class);
+        if (kw != null && !kw.isEmpty()) {
+            q.setParameter("kw", "%" + kw + "%");
+        }
+
+        int page = params.get("page") != null ? Integer.parseInt(params.get("page")) : 1;
+        int pageSize = params.get("pageSize") != null ? Integer.parseInt(params.get("pageSize")) : 10;
+
+        q.setFirstResult((page - 1) * pageSize);
+        q.setMaxResults(pageSize);
+
+        return q.getResultList();
+    }
+
+    @Override
+    public long countRatings(Map<String, String> params) {
+        String jpql = "SELECT COUNT(r) FROM CourseRating r WHERE 1=1";
+        String kw = params.get("kw");
+
+        if (kw != null && !kw.isEmpty()) {
+            jpql += " AND r.comment LIKE :kw";
+        }
+
+        TypedQuery<Long> q = em.createQuery(jpql, Long.class);
+        if (kw != null && !kw.isEmpty()) {
+            q.setParameter("kw", "%" + kw + "%");
+        }
+
+        return q.getSingleResult();
+    }
 
     @Override
     public CourseRating findById(Long id) {
-        return factory.getObject().getCurrentSession().find(CourseRating.class, id);
+        return em.find(CourseRating.class, id);
     }
 
     @Override
-    public List<CourseRating> findByCourse(Long courseId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<CourseRating> q = s.createQuery(
-            "SELECT cr FROM CourseRating cr WHERE cr.courseId.id = :cid", CourseRating.class);
-        q.setParameter("cid", courseId);
-        return q.getResultList();
-    }
-
-    @Override
-    public List<CourseRating> findByStudent(Long studentId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<CourseRating> q = s.createQuery(
-            "SELECT cr FROM CourseRating cr WHERE cr.studentId.id = :sid", CourseRating.class);
-        q.setParameter("sid", studentId);
-        return q.getResultList();
-    }
-
-    @Override
-    public CourseRating findByCourseAndStudent(Long courseId, Long studentId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<CourseRating> q = s.createQuery(
-            "SELECT cr FROM CourseRating cr WHERE cr.courseId.id = :cid AND cr.studentId.id = :sid",
-            CourseRating.class);
-        q.setParameter("cid", courseId);
-        q.setParameter("sid", studentId);
-        return q.getResultStream().findFirst().orElse(null);
-    }
-
-    @Override
-    public CourseRating save(CourseRating cr) {
-        Session s = factory.getObject().getCurrentSession();
-        if (cr.getId() == null) {
-            s.persist(cr);
-            return cr;
+    public void save(CourseRating rating) {
+        if (rating.getId() == null) {
+            em.persist(rating);
         } else {
-            return s.merge(cr);
+            em.merge(rating);
         }
     }
 
     @Override
     public void delete(Long id) {
-        Session s = factory.getObject().getCurrentSession();
-        CourseRating cr = s.find(CourseRating.class, id);
-        if (cr != null) s.remove(cr);
+        CourseRating r = findById(id);
+        if (r != null) {
+            em.remove(r);
+        }
     }
 }
-

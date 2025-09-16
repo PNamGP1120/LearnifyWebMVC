@@ -1,0 +1,61 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{base :: head-resources}"></head>
+    <body>
+        <div th:replace="~{base :: layout(~{::content})}">
+            <div th:fragment="content">
+
+                <h2 class="my-4" th:text="${lesson.id == null} ? '➕ Thêm Bài học' : '✏️ Sửa Bài học'"></h2>
+
+                <form th:object="${lesson}"
+                      th:action="${lesson.id == null}? @{/admin/courses/lessons/add} : @{/admin/courses/lessons/{id}/edit(id=${lesson.id})}"
+                      method="post">
+
+                    <input type="hidden" th:field="*{id}"/>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tiêu đề</label>
+                        <input type="text" th:field="*{title}" class="form-control"/>
+                        <div class="text-danger" th:errors="*{title}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">URL Nội dung</label>
+                        <input type="text" th:field="*{contentUrl}" class="form-control"/>
+                        <div class="text-danger" th:errors="*{contentUrl}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Loại Nội dung</label>
+                        <input type="text" th:field="*{contentType}" class="form-control"/>
+                        <div class="text-danger" th:errors="*{contentType}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Thời lượng (phút)</label>
+                        <input type="number" th:field="*{durationMin}" class="form-control"/>
+                        <div class="text-danger" th:errors="*{durationMin}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Thứ tự</label>
+                        <input type="number" th:field="*{orderIndex}" class="form-control"/>
+                        <div class="text-danger" th:errors="*{orderIndex}"></div>
+                    </div>
+
+                    <!-- chọn Section cho Lesson -->
+                    <div class="mb-3">
+                        <label class="form-label">Section</label>
+                        <select th:field="*{sectionId}" class="form-select">
+                            <option th:each="s : ${sections}" th:value="${s}" th:text="${s.title}"></option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Lưu</button>
+                    <a th:href="@{/admin/courses}" class="btn btn-secondary">Hủy</a>
+                </form>
+
+            </div>
+        </div>
+    </body>
+</html>

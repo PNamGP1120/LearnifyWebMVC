@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -17,27 +18,27 @@ public class CourseSectionServiceImpl implements CourseSectionService {
     private CourseSectionRepository sectionRepo;
 
     @Override
-    public CourseSection getCourseSectionById(Long id) {
+    public List<CourseSection> getSections(Map<String, String> params) {
+        return sectionRepo.getSections(params);
+    }
+
+    @Override
+    public long countSections(Map<String, String> params) {
+        return sectionRepo.countSections(params);
+    }
+
+    @Override
+    public CourseSection getSectionById(Long id) {
         return sectionRepo.findById(id);
     }
 
     @Override
-    public List<CourseSection> getSectionsByCourse(Long courseId) {
-        return sectionRepo.findByCourse(courseId);
+    public void saveSection(CourseSection section) {
+        sectionRepo.save(section);
     }
 
     @Override
-    public CourseSection createCourseSection(CourseSection cs) {
-        return sectionRepo.save(cs);
-    }
-
-    @Override
-    public CourseSection updateCourseSection(CourseSection cs) {
-        return sectionRepo.save(cs);
-    }
-
-    @Override
-    public void deleteCourseSection(Long id) {
+    public void deleteSection(Long id) {
         sectionRepo.delete(id);
     }
 }

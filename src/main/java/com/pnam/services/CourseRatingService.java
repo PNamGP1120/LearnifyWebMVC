@@ -2,13 +2,12 @@ package com.pnam.services;
 
 import com.pnam.pojo.CourseRating;
 import java.util.List;
+import java.util.Map;
 
 public interface CourseRatingService {
-    CourseRating getCourseRatingById(Long id);
-    List<CourseRating> getRatingsByCourse(Long courseId);
-    List<CourseRating> getRatingsByStudent(Long studentId);
-    CourseRating getRatingByCourseAndStudent(Long courseId, Long studentId);
-    CourseRating createCourseRating(CourseRating cr);
-    CourseRating updateCourseRating(CourseRating cr);
-    void deleteCourseRating(Long id);
+    List<CourseRating> getRatings(Map<String, String> params);
+    long countRatings(Map<String, String> params);
+    CourseRating getRatingById(Long id);
+    void saveRating(CourseRating rating);
+    void deleteRating(Long id);
 }

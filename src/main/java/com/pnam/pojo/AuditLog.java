@@ -1,35 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 
-/**
- *
- * @author pnam
- */
 @Entity
 @Table(name = "audit_log")
 @XmlRootElement
@@ -39,42 +17,46 @@ import java.util.Date;
     @NamedQuery(name = "AuditLog.findByAction", query = "SELECT a FROM AuditLog a WHERE a.action = :action"),
     @NamedQuery(name = "AuditLog.findByTableName", query = "SELECT a FROM AuditLog a WHERE a.tableName = :tableName"),
     @NamedQuery(name = "AuditLog.findByRecordId", query = "SELECT a FROM AuditLog a WHERE a.recordId = :recordId"),
-    @NamedQuery(name = "AuditLog.findByCreatedAt", query = "SELECT a FROM AuditLog a WHERE a.createdAt = :createdAt")})
+    @NamedQuery(name = "AuditLog.findByCreatedAt", query = "SELECT a FROM AuditLog a WHERE a.createdAt = :createdAt")
+})
 public class AuditLog implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "id")
     private Long id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 100)
-    @Column(name = "action")
+
+    @NotBlank(message = "{auditLog.action.notBlank}")
+    @Size(max = 100, message = "{auditLog.action.size}")
+    @Column(name = "action", nullable = false, length = 100)
     private String action;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 100)
-    @Column(name = "table_name")
+
+    @NotBlank(message = "{auditLog.tableName.notBlank}")
+    @Size(max = 100, message = "{auditLog.tableName.size}")
+    @Column(name = "table_name", nullable = false, length = 100)
     private String tableName;
+    
     @Column(name = "record_id")
     private BigInteger recordId;
+
+    @Size(max = 65535, message = "{auditLog.oldData.size}")
     @Lob
-    @Size(max = 65535)
     @Column(name = "old_data")
     private String oldData;
+
+    @Size(max = 65535, message = "{auditLog.newData.size}")
     @Lob
-    @Size(max = 65535)
     @Column(name = "new_data")
     private String newData;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "created_at")
+
+    @NotNull(message = "{auditLog.createdAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", nullable = false)
     private Date createdAt;
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+
     @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonIgnore
     private User userId;
 
@@ -180,5 +162,5 @@ public class AuditLog implements Serializable {
     public String toString() {
         return "com.pnam.pojo.AuditLog[ id=" + id + " ]";
     }
-    
+
 }

@@ -18,23 +18,23 @@ public class CourseServiceImpl implements CourseService {
     private CourseRepository courseRepo;
 
     @Override
-    public Course getCourseById(Long id) {
-        return courseRepo.findById(id);
-    }
-
-    @Override
     public List<Course> getCourses(Map<String, String> params) {
         return courseRepo.getCourses(params);
     }
 
     @Override
-    public Course createCourse(Course c) {
-        return courseRepo.save(c);
+    public long countCourses(Map<String, String> params) {
+        return courseRepo.countCourses(params);
     }
 
     @Override
-    public Course updateCourse(Course c) {
-        return courseRepo.save(c);
+    public Course getCourseById(Long id) {
+        return courseRepo.findById(id);
+    }
+
+    @Override
+    public void saveCourse(Course course) {
+        courseRepo.save(course);
     }
 
     @Override

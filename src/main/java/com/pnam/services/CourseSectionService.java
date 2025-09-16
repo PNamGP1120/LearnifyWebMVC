@@ -2,11 +2,12 @@ package com.pnam.services;
 
 import com.pnam.pojo.CourseSection;
 import java.util.List;
+import java.util.Map;
 
 public interface CourseSectionService {
-    CourseSection getCourseSectionById(Long id);
-    List<CourseSection> getSectionsByCourse(Long courseId);
-    CourseSection createCourseSection(CourseSection cs);
-    CourseSection updateCourseSection(CourseSection cs);
-    void deleteCourseSection(Long id);
+    List<CourseSection> getSections(Map<String, String> params);
+    long countSections(Map<String, String> params);
+    CourseSection getSectionById(Long id);
+    void saveSection(CourseSection section);
+    void deleteSection(Long id);
 }

@@ -1,0 +1,100 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <h2 class="my-4">🎓 Danh sách Giảng viên</h2>
+
+        <!-- Form lọc & tìm kiếm -->
+        <form method="get" th:action="@{/admin/instructors}" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <input type="text" name="kw" class="form-control" placeholder="Tìm kiếm..."
+                       th:value="${kw}">
+            </div>
+            <div class="col-md-3">
+                <select name="verified" class="form-select">
+                    <option value="">-- Trạng thái xác minh --</option>
+                    <option value="true" th:selected="${verified == 'true'}">Đã xác minh</option>
+                    <option value="false" th:selected="${verified == 'false'}">Chưa xác minh</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="pageSize" min="5" class="form-control"
+                       placeholder="Số dòng/trang" th:value="${pageSize}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Lọc
+                </button>
+                <a th:href="@{/admin/instructors}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+
+        <!-- Bảng danh sách -->
+        <table class="table table-striped table-hover shadow">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Bio</th>
+                <th>Chứng chỉ</th>
+                <th>Xác minh</th>
+                <th>Ngày xác minh</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${instructors}">
+                <td th:text="${i.userId}"></td>
+                <td th:text="${i.bio}"></td>
+                <td th:text="${i.certifications}"></td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${i.verifiedByAdmin} ? 'bg-success' : 'bg-secondary'"
+                          th:text="${i.verifiedByAdmin} ? 'Đã xác minh' : 'Chưa xác minh'"></span>
+                </td>
+                <td th:text="${#dates.format(i.verifiedAt, 'dd/MM/yyyy')}"></td>
+                <td>
+                    <a th:href="@{/admin/instructors/{id}(id=${i.userId})}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a th:href="@{/admin/instructors/{id}/edit(id=${i.userId})}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a th:href="@{/admin/instructors/{id}/delete(id=${i.userId})}"
+                       onclick="return confirm('Bạn có chắc muốn xoá giảng viên này?')"
+                       class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Phân trang -->
+        <nav>
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${page == 1} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/instructors(page=${page-1}, pageSize=${pageSize}, kw=${kw}, verified=${verified})}">
+                        Trước
+                    </a>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link" th:text="${page}">1</span>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                       th:href="@{/admin/instructors(page=${page+1}, pageSize=${pageSize}, kw=${kw}, verified=${verified})}">
+                        Tiếp
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</body>
+</html>

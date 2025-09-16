@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface CourseService {
-    Course getCourseById(Long id);
     List<Course> getCourses(Map<String, String> params);
-    Course createCourse(Course c);
-    Course updateCourse(Course c);
+    long countCourses(Map<String, String> params);
+    Course getCourseById(Long id);
+    void saveCourse(Course course);
     void deleteCourse(Long id);
 }

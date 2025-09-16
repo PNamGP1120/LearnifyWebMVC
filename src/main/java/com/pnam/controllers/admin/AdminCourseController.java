@@ -3,15 +3,22 @@ package com.pnam.controllers.admin;
 import com.pnam.pojo.Course;
 import com.pnam.pojo.CourseSection;
 import com.pnam.pojo.Lesson;
+import com.pnam.services.CategoryService;
 import com.pnam.services.CourseService;
 import com.pnam.services.CourseSectionService;
+import com.pnam.services.InstructorProfileService;
 import com.pnam.services.LessonService;
+import com.pnam.validator.CourseValidator;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/courses")
@@ -21,120 +28,138 @@ public class AdminCourseController {
     private CourseService courseService;
 
     @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private InstructorProfileService instructorService;
+
+    @Autowired
     private CourseSectionService sectionService;
 
     @Autowired
     private LessonService lessonService;
 
-    // ================== COURSE ==================
+    @Autowired
+    private CourseValidator courseValidator;
+
+    @InitBinder("course")
+    protected void initBinder(WebDataBinder binder) {
+        binder.setValidator(courseValidator);
+    }
+
+    // ==================== Danh sách Course ====================
     @GetMapping
-    public String listCourses(Model model) {
-        List<Course> courses = courseService.getCourses(null);
+    public String list(@RequestParam(required = false) Map<String, String> params, Model model) {
+        if (params == null) {
+            params = Map.of();
+        }
+
+        var courses = courseService.getCourses(params);
+        long count = courseService.countCourses(params);
+
+        String pageStr = params.getOrDefault("page", "1");
+        int page = (pageStr != null && pageStr.matches("\\d+")) ? Integer.parseInt(pageStr) : 1;
+
+        String pageSizeStr = params.getOrDefault("pageSize", "10");
+        int pageSize = (pageSizeStr != null && pageSizeStr.matches("\\d+")) ? Integer.parseInt(pageSizeStr) : 10;
+
         model.addAttribute("courses", courses);
-        return "admin/courses/list";
+        model.addAttribute("count", count);
+        model.addAttribute("page", page);
+        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("param", params);
+
+        model.addAttribute("categories", categoryService.getCategories(Map.of()));
+        model.addAttribute("instructors", instructorService.getProfiles(Map.of()));
+
+        return "admin/course/list";
     }
 
-    @GetMapping("/{id}")
-    public String courseDetail(@PathVariable("id") Long id, Model model) {
-        Course course = courseService.getCourseById(id);
-        List<CourseSection> sections = sectionService.getSectionsByCourse(id);
-
-        model.addAttribute("course", course);
-        model.addAttribute("sections", sections);
-        return "admin/courses/detail";
+    // ==================== Thêm Course ====================
+    @GetMapping("/add")
+    public String addForm(Model model) {
+        model.addAttribute("course", new Course());
+        model.addAttribute("categories", categoryService.getCategories(Map.of()));
+        model.addAttribute("instructors", instructorService.getProfiles(Map.of()));
+        return "admin/course/form";
     }
 
-    @PostMapping("/{id}/approve")
-    public String approve(@PathVariable("id") Long id) {
-        Course course = courseService.getCourseById(id);
-        course.setStatus("PUBLISHED");
-        courseService.updateCourse(course);
+    @PostMapping("/add")
+    public String add(@ModelAttribute("course") @Valid Course c,
+            BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("categories", categoryService.getCategories(Map.of()));
+            model.addAttribute("instructors", instructorService.getProfiles(Map.of()));
+            return "admin/course/form";
+        }
+        courseService.saveCourse(c);
         return "redirect:/admin/courses";
     }
 
-    @PostMapping("/{id}/block")
-    public String block(@PathVariable("id") Long id) {
-        Course course = courseService.getCourseById(id);
-        course.setStatus("UNPUBLISHED");
-        courseService.updateCourse(course);
+    // ==================== Sửa Course ====================
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable("id") Long id, Model model) {
+        Course c = courseService.getCourseById(id);
+        if (c == null) {
+            return "redirect:/admin/courses";
+        }
+        model.addAttribute("course", c);
+        model.addAttribute("categories", categoryService.getCategories(Map.of()));
+        model.addAttribute("instructors", instructorService.getProfiles(Map.of()));
+        return "admin/course/form";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String edit(@PathVariable("id") Long id,
+            @ModelAttribute("course") @Valid Course c,
+            BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("categories", categoryService.getCategories(Map.of()));
+            model.addAttribute("instructors", instructorService.getProfiles(Map.of()));
+            return "admin/course/form";
+        }
+        c.setId(id);
+        courseService.saveCourse(c);
         return "redirect:/admin/courses";
     }
 
+    // ==================== Xoá Course ====================
     @GetMapping("/{id}/delete")
-    public String deleteCourse(@PathVariable("id") Long id) {
+    public String delete(@PathVariable("id") Long id) {
         courseService.deleteCourse(id);
         return "redirect:/admin/courses";
     }
 
-    // ================== SECTION ==================
+    // ==================== Danh sách Section theo Course ====================
+// ==================== Danh sách Section theo Course ====================
     @GetMapping("/{courseId}/sections")
-    public String listSections(@PathVariable("courseId") Long courseId, Model model) {
-        model.addAttribute("course", courseService.getCourseById(courseId));
-        model.addAttribute("sections", sectionService.getSectionsByCourse(courseId));
-        return "admin/sections/list";
+    public String sectionList(@PathVariable("courseId") Long courseId, Model model) {
+        // Lấy course theo ID
+        Course c = courseService.getCourseById(courseId);
+        if (c == null) {
+            return "redirect:/admin/courses";
+        }
+
+        // Lấy section theo courseId
+        List<CourseSection> sections = sectionService.getSections(Map.of("courseId", courseId.toString()));
+
+        model.addAttribute("course", c);
+        model.addAttribute("sections", sections);
+        return "admin/course/section-list";
     }
 
-    @GetMapping("/{courseId}/sections/new")
-    public String newSection(@PathVariable("courseId") Long courseId, Model model) {
-        model.addAttribute("course", courseService.getCourseById(courseId));
-        model.addAttribute("section", new CourseSection());
-        return "admin/sections/form";
-    }
+    // ==================== Danh sách Lesson theo Section ====================
+    @GetMapping("/sections/{sectionId}/lessons")
+    public String lessonList(@PathVariable("sectionId") Long sectionId, Model model) {
+        CourseSection s = sectionService.getSectionById(sectionId);
+        if (s == null) {
+            return "redirect:/admin/courses";
+        }
 
-    @PostMapping("/{courseId}/sections/save")
-    public String saveSection(@PathVariable("courseId") Long courseId,
-                              @ModelAttribute("section") CourseSection section) {
-        section.setCourseId(courseService.getCourseById(courseId));
-        if (section.getId() == null)
-            sectionService.createCourseSection(section);
-        else
-            sectionService.updateCourseSection(section);
-        return "redirect:/admin/courses/" + courseId + "/sections";
-    }
+        List<Lesson> lessons = lessonService.getLessons(Map.of("sectionId", sectionId.toString()));
 
-    @GetMapping("/{courseId}/sections/{id}/delete")
-    public String deleteSection(@PathVariable("courseId") Long courseId,
-                                @PathVariable("id") Long id) {
-        sectionService.deleteCourseSection(id);
-        return "redirect:/admin/courses/" + courseId + "/sections";
-    }
-
-    // ================== LESSON ==================
-    @GetMapping("/{courseId}/sections/{sectionId}/lessons")
-    public String listLessons(@PathVariable("courseId") Long courseId,
-                              @PathVariable("sectionId") Long sectionId, Model model) {
-        model.addAttribute("course", courseService.getCourseById(courseId));
-        model.addAttribute("section", sectionService.getCourseSectionById(sectionId));
-        model.addAttribute("lessons", lessonService.getLessonsBySection(sectionId));
-        return "admin/lessons/list";
-    }
-
-    @GetMapping("/{courseId}/sections/{sectionId}/lessons/new")
-    public String newLesson(@PathVariable("courseId") Long courseId,
-                            @PathVariable("sectionId") Long sectionId, Model model) {
-        model.addAttribute("course", courseService.getCourseById(courseId));
-        model.addAttribute("section", sectionService.getCourseSectionById(sectionId));
-        model.addAttribute("lesson", new Lesson());
-        return "admin/lessons/form";
-    }
-
-    @PostMapping("/{courseId}/sections/{sectionId}/lessons/save")
-    public String saveLesson(@PathVariable("courseId") Long courseId,
-                             @PathVariable("sectionId") Long sectionId,
-                             @ModelAttribute("lesson") Lesson lesson) {
-        lesson.setSectionId(sectionService.getCourseSectionById(sectionId));
-        if (lesson.getId() == null)
-            lessonService.createLesson(lesson);
-        else
-            lessonService.updateLesson(lesson);
-        return "redirect:/admin/courses/" + courseId + "/sections/" + sectionId + "/lessons";
-    }
-
-    @GetMapping("/{courseId}/sections/{sectionId}/lessons/{id}/delete")
-    public String deleteLesson(@PathVariable("courseId") Long courseId,
-                               @PathVariable("sectionId") Long sectionId,
-                               @PathVariable("id") Long id) {
-        lessonService.deleteLesson(id);
-        return "redirect:/admin/courses/" + courseId + "/sections/" + sectionId + "/lessons";
+        model.addAttribute("section", s);
+        model.addAttribute("lessons", lessons);
+        return "admin/course/lesson-list";
     }
 }

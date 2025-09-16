@@ -2,12 +2,12 @@ package com.pnam.repositories;
 
 import com.pnam.pojo.CourseRating;
 import java.util.List;
+import java.util.Map;
 
 public interface CourseRatingRepository {
+    List<CourseRating> getRatings(Map<String, String> params);
+    long countRatings(Map<String, String> params);
     CourseRating findById(Long id);
-    List<CourseRating> findByCourse(Long courseId);
-    List<CourseRating> findByStudent(Long studentId);
-    CourseRating findByCourseAndStudent(Long courseId, Long studentId);
-    CourseRating save(CourseRating cr);
+    void save(CourseRating rating);
     void delete(Long id);
 }

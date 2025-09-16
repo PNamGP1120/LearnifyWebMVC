@@ -5,42 +5,84 @@
 <div th:replace="~{base :: layout(~{::content})}">
   <div th:fragment="content">
 
-    <h2 class="my-4">📖 Quản lý Ghi danh (Enrollments)</h2>
+    <h2 class="my-4">📋 Danh sách Enrollments</h2>
+    <a th:href="@{/admin/enrollments/add}" class="btn btn-success mb-3">➕ Thêm Enrollment</a>
 
-    <div class="mb-3">
-      <a class="btn btn-primary" th:href="@{/admin/enrollments/new}">➕ Thêm Enrollment</a>
-    </div>
+    <!-- Form lọc / tìm kiếm -->
+    <form class="row g-3 mb-4" method="get" th:action="@{/admin/enrollments}">
+      <div class="col-md-3">
+        <input type="text" name="studentId" class="form-control"
+               th:value="${param.studentId}" placeholder="ID học viên"/>
+      </div>
+      <div class="col-md-3">
+        <input type="text" name="courseId" class="form-control"
+               th:value="${param.courseId}" placeholder="ID khoá học"/>
+      </div>
+      <div class="col-md-3">
+        <select name="accessStatus" class="form-select">
+          <option value="">-- Trạng thái --</option>
+          <option value="ACTIVE" th:selected="${param.accessStatus == 'ACTIVE'}">ACTIVE</option>
+          <option value="CANCELLED" th:selected="${param.accessStatus == 'CANCELLED'}">CANCELLED</option>
+          <option value="COMPLETED" th:selected="${param.accessStatus == 'COMPLETED'}">COMPLETED</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary w-100">🔍 Lọc</button>
+      </div>
+    </form>
 
-    <table class="table table-bordered table-striped shadow">
+    <!-- Bảng danh sách -->
+    <table class="table table-bordered table-hover shadow">
       <thead class="table-dark">
       <tr>
         <th>ID</th>
         <th>Học viên</th>
         <th>Khoá học</th>
-        <th>Ngày ghi danh</th>
+        <th>Ngày đăng ký</th>
         <th>Trạng thái</th>
-        <th>Hành động</th>
+        <th>Thao tác</th>
       </tr>
       </thead>
       <tbody>
       <tr th:each="e : ${enrollments}">
         <td th:text="${e.id}"></td>
-        <td th:text="${e.studentId.fullName}"></td>
-        <td th:text="${e.courseId.title}"></td>
-        <td th:text="${#dates.format(e.enrolledAt,'dd/MM/yyyy')}"></td>
+        <td th:text="${e.studentId != null ? e.studentId.fullName : '---'}"></td>
+        <td th:text="${e.courseId != null ? e.courseId.title : '---'}"></td>
+        <td th:text="${#dates.format(e.enrolledAt, 'dd/MM/yyyy')}"></td>
+        <td th:text="${e.accessStatus}"></td>
         <td>
-          <span th:if="${e.accessStatus == 'ACTIVE'}" class="badge bg-success">ACTIVE</span>
-          <span th:if="${e.accessStatus == 'EXPIRED'}" class="badge bg-warning">EXPIRED</span>
-          <span th:if="${e.accessStatus == 'CANCELED'}" class="badge bg-danger">CANCELED</span>
+          <a th:href="@{/admin/enrollments/{id}(id=${e.id})}" class="btn btn-sm btn-primary">👁 Xem</a>
+          <a th:href="@{/admin/enrollments/{id}/delete(id=${e.id})}"
+             class="btn btn-sm btn-danger"
+             onclick="return confirm('Xoá enrollment này?')">🗑 Xoá</a>
         </td>
-        <td>
-          <a th:href="@{/admin/enrollments/{id}(id=${e.id})}" class="btn btn-info btn-sm">🔍 Xem</a>
-          <a th:href="@{/admin/enrollments/delete/{id}(id=${e.id})}" class="btn btn-danger btn-sm"
-             onclick="return confirm('Bạn chắc muốn xoá?')">🗑 Xoá</a>
-        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(enrollments)}">
+        <td colspan="6" class="text-center text-muted">Không tìm thấy enrollment nào</td>
       </tr>
       </tbody>
     </table>
+
+    <!-- Phân trang -->
+    <nav th:if="${count > pageSize}">
+      <ul class="pagination">
+        <li class="page-item" th:classappend="${page == 1}? 'disabled'">
+          <a class="page-link"
+             th:href="@{/admin/enrollments(page=${page-1}, studentId=${param.studentId}, courseId=${param.courseId}, accessStatus=${param.accessStatus})}">«</a>
+        </li>
+        <li class="page-item"
+            th:each="i : ${#numbers.sequence(1, (count + pageSize - 1) / pageSize)}"
+            th:classappend="${i == page}? 'active'">
+          <a class="page-link"
+             th:href="@{/admin/enrollments(page=${i}, studentId=${param.studentId}, courseId=${param.courseId}, accessStatus=${param.accessStatus})}"
+             th:text="${i}"></a>
+        </li>
+        <li class="page-item" th:classappend="${page * pageSize >= count}? 'disabled'">
+          <a class="page-link"
+             th:href="@{/admin/enrollments(page=${page+1}, studentId=${param.studentId}, courseId=${param.courseId}, accessStatus=${param.accessStatus})}">»</a>
+        </li>
+      </ul>
+    </nav>
 
   </div>
 </div>

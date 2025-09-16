@@ -1,0 +1,52 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <h2 class="my-4">📚 Lessons của Section: <span th:text="${section.title}"></span></h2>
+        <a th:href="@{/admin/courses/{id}/sections(id=${section.courseId.id})}"
+           class="btn btn-secondary mb-3">⬅ Quay lại Sections</a>
+        <a th:href="@{/admin/courses/sections/{id}/lessons/add(id=${section.id})}" class="btn btn-success mb-3">➕ Thêm Lesson</a>
+
+        <table class="table table-striped table-hover shadow">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Tiêu đề</th>
+                <th>Loại nội dung</th>
+                <th>URL nội dung</th>
+                <th>Thời lượng (phút)</th>
+                <th>Thứ tự</th>
+                <th>Xem trước</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="l : ${lessons}">
+                <td th:text="${l.id}"></td>
+                <td th:text="${l.title}"></td>
+                <td th:text="${l.contentType}"></td>
+                <td><a th:href="${l.contentUrl}" target="_blank" th:text="${l.contentUrl}"></a></td>
+                <td th:text="${l.durationMin}"></td>
+                <td th:text="${l.orderIndex}"></td>
+                <td th:text="${l.previewable ? 'Có' : 'Không'}"></td>
+                <td>
+                    <a th:href="@{/admin/courses/lessons/{id}/edit(id=${l.id})}"
+                       class="btn btn-sm btn-warning">✏ Sửa</a>
+                    <a th:href="@{/admin/courses/lessons/{id}/delete(id=${l.id})}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Xoá lesson này?')">🗑 Xoá</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(lessons)}">
+                <td colspan="8" class="text-center text-muted">Chưa có lesson nào trong section này</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+</body>
+</html>

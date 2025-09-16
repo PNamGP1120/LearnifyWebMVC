@@ -1,0 +1,45 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <h2 class="my-4">📖 Sections của khoá học: <span th:text="${course.title}"></span></h2>
+        <a th:href="@{/admin/courses}" class="btn btn-secondary mb-3">⬅ Quay lại danh sách khoá học</a>
+        <a th:href="@{/admin/courses/{id}/sections/add(id=${course.id})}" class="btn btn-success mb-3">➕ Thêm Section</a>
+
+        <table class="table table-bordered table-hover shadow">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Tiêu đề Section</th>
+                <th>Thứ tự</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${sections}">
+                <td th:text="${s.id}"></td>
+                <td th:text="${s.title}"></td>
+                <td th:text="${s.orderIndex}"></td>
+                <td>
+                    <a th:href="@{/admin/courses/sections/{id}/lessons(id=${s.id})}"
+                       class="btn btn-sm btn-info">📚 Lessons</a>
+                    <a th:href="@{/admin/courses/sections/{id}/edit(id=${s.id})}"
+                       class="btn btn-sm btn-warning">✏ Sửa</a>
+                    <a th:href="@{/admin/courses/sections/{id}/delete(id=${s.id})}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Xoá section này?')">🗑 Xoá</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(sections)}">
+                <td colspan="5" class="text-center text-muted">Chưa có section nào cho khoá học này</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+</body>
+</html>

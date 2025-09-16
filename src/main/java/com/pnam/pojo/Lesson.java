@@ -1,34 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
 import java.util.Set;
 
-/**
- *
- * @author pnam
- */
 @Entity
 @Table(name = "lesson")
 @XmlRootElement
@@ -40,50 +19,62 @@ import java.util.Set;
     @NamedQuery(name = "Lesson.findByContentType", query = "SELECT l FROM Lesson l WHERE l.contentType = :contentType"),
     @NamedQuery(name = "Lesson.findByDurationMin", query = "SELECT l FROM Lesson l WHERE l.durationMin = :durationMin"),
     @NamedQuery(name = "Lesson.findByOrderIndex", query = "SELECT l FROM Lesson l WHERE l.orderIndex = :orderIndex"),
-    @NamedQuery(name = "Lesson.findByPreviewable", query = "SELECT l FROM Lesson l WHERE l.previewable = :previewable")})
+    @NamedQuery(name = "Lesson.findByPreviewable", query = "SELECT l FROM Lesson l WHERE l.previewable = :previewable")
+})
 public class Lesson implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    // ===== ID =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "id")
     private Long id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 200)
-    @Column(name = "title")
+
+    // ===== TITLE =====
+    @NotBlank(message = "{lesson.title.notBlank}")
+    @Size(max = 200, message = "{lesson.title.size}")
+    @Column(name = "title", nullable = false, length = 200)
     private String title;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 255)
-    @Column(name = "content_url")
+
+    // ===== CONTENT_URL =====
+    @NotBlank(message = "{lesson.contentUrl.notBlank}")
+    @Size(max = 255, message = "{lesson.contentUrl.size}")
+    @Column(name = "content_url", nullable = false, length = 255)
     private String contentUrl;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 5)
-    @Column(name = "content_type")
+
+    // ===== CONTENT_TYPE =====
+    @NotBlank(message = "{lesson.contentType.notBlank}")
+    @Size(max = 5, message = "{lesson.contentType.size}")
+    @Column(name = "content_type", nullable = false, length = 5)
     private String contentType;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "duration_min")
+
+    // ===== DURATION =====
+    @NotNull(message = "{lesson.durationMin.notNull}")
+    @Positive(message = "{lesson.durationMin.positive}")
+    @Column(name = "duration_min", nullable = false)
     private int durationMin;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "order_index")
+
+    // ===== ORDER_INDEX =====
+    @NotNull(message = "{lesson.orderIndex.notNull}")
+    @Positive(message = "{lesson.orderIndex.positive}")
+    @Column(name = "order_index", nullable = false)
     private int orderIndex;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "previewable")
+
+    // ===== PREVIEWABLE =====
+    @Column(name = "previewable", nullable = false)
     private boolean previewable;
-    @JoinColumn(name = "section_id", referencedColumnName = "id")
+
+    // ===== RELATIONSHIPS =====
     @ManyToOne(optional = false)
+    @JoinColumn(name = "section_id", referencedColumnName = "id")
     @JsonIgnore
     private CourseSection sectionId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "lessonId")
+
+    @OneToMany(mappedBy = "lessonId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Progress> progressSet;
 
+    // ===== Constructors =====
     public Lesson() {
     }
 
@@ -198,5 +189,5 @@ public class Lesson implements Serializable {
     public String toString() {
         return "com.pnam.pojo.Lesson[ id=" + id + " ]";
     }
-    
+
 }

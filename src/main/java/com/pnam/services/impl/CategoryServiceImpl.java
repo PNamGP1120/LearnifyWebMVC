@@ -7,42 +7,44 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
 public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
-    private CategoryRepository categoryRepo;
+    private CategoryRepository repo;
 
     @Override
-    public Category getCategoryById(Long id) {
-        return categoryRepo.findById(id);
+    public List<Category> getCategories(Map<String, String> params) {
+        return repo.getCategories(params == null ? Collections.emptyMap() : params);
     }
 
     @Override
-    public Category getCategoryBySlug(String slug) {
-        return categoryRepo.findBySlug(slug);
+    public long countCategories(Map<String, String> params) {
+        return repo.countCategories(params == null ? Collections.emptyMap() : params);
     }
 
     @Override
-    public List<Category> getAllCategories() {
-        return categoryRepo.findAll();
+    public Category findById(Long id) {
+        return repo.findById(id);
     }
 
     @Override
-    public Category createCategory(Category c) {
-        return categoryRepo.save(c);
-    }
-
-    @Override
-    public Category updateCategory(Category c) {
-        return categoryRepo.save(c);
+    public void saveCategory(Category c) {
+        repo.save(c);
     }
 
     @Override
     public void deleteCategory(Long id) {
-        categoryRepo.delete(id);
+        repo.delete(id);
+    }
+
+    @Override
+    public Category getCategoryById(Long id) {
+        return repo.findById(id);
     }
 }

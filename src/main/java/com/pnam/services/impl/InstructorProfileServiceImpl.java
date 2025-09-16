@@ -4,6 +4,7 @@ import com.pnam.pojo.InstructorProfile;
 import com.pnam.repositories.InstructorProfileRepository;
 import com.pnam.services.InstructorProfileService;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +17,13 @@ public class InstructorProfileServiceImpl implements InstructorProfileService {
     private InstructorProfileRepository instructorRepo;
 
     @Override
-    public List<InstructorProfile> getAllProfiles() {
-        return instructorRepo.findAll();
+    public List<InstructorProfile> getProfiles(Map<String, String> params) {
+        return instructorRepo.getProfiles(params);
+    }
+
+    @Override
+    public long countProfiles(Map<String, String> params) {
+        return instructorRepo.countProfiles(params);
     }
 
     @Override
@@ -35,4 +41,3 @@ public class InstructorProfileServiceImpl implements InstructorProfileService {
         instructorRepo.delete(userId);
     }
 }
-

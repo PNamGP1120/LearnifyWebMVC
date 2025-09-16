@@ -47,7 +47,7 @@ public class SpringSecurityConfigs {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                 // Public pages
-                .requestMatchers("/", "/home", "/register", "/login", "/error/**").permitAll()
+                .requestMatchers("/home", "/register", "/login", "/error/**").permitAll()
                 // Static resources
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 // API frontend ReactJS

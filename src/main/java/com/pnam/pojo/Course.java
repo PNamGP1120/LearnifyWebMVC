@@ -5,7 +5,6 @@
 package com.pnam.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +20,10 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
@@ -53,81 +55,103 @@ import java.util.Set;
 public class Course implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    // ===== ID =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "id")
     private Long id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 200)
-    @Column(name = "title")
+
+    // ===== TITLE =====
+    @NotBlank(message = "{course.title.notBlank}")
+    @Size(max = 200, message = "{course.title.size}")
+    @Column(name = "title", nullable = false, length = 200)
     private String title;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 220)
-    @Column(name = "slug")
+
+    // ===== SLUG =====
+    @NotBlank(message = "{course.slug.notBlank}")
+    @Size(max = 220, message = "{course.slug.size}")
+    @Column(name = "slug", nullable = false, length = 220)
     private String slug;
+
+    // ===== DESCRIPTION =====
+    @Size(max = 65535, message = "{course.description.size}")
     @Lob
-    @Size(max = 65535)
-    @Column(name = "description")
     private String description;
-    @Size(max = 255)
+
+    // ===== COVER IMAGE =====
+    @Size(max = 255, message = "{course.coverImage.size}")
     @Column(name = "cover_image")
     private String coverImage;
-    @Size(max = 255)
+
+    // ===== INTRO VIDEO URL =====
+    @Size(max = 255, message = "{course.introVideoUrl.size}")
     @Column(name = "intro_video_url")
     private String introVideoUrl;
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Column(name = "price")
+
+    // ===== PRICE =====
+    @DecimalMin(value = "0.0", inclusive = true, message = "{course.price.min}")
     private BigDecimal price;
-    @Size(max = 3)
-    @Column(name = "currency")
+
+    // ===== CURRENCY =====
+    @Size(max = 3, message = "{course.currency.size}")
     private String currency;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "duration_hours")
+
+    // ===== DURATION =====
+    @NotNull(message = "{course.duration.notNull}")
+    @Positive(message = "{course.duration.positive}")
+    @Column(name = "duration_hours", nullable = false)
     private BigDecimal durationHours;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 11)
-    @Column(name = "status")
+
+    // ===== STATUS =====
+    @NotBlank(message = "{course.status.notBlank}")
+    @Size(max = 11, message = "{course.status.size}")
     private String status;
-    @Basic(optional = false)
-    @NotNull
+
+    // ===== TIMESTAMP =====
+    @NotNull(message = "{course.createdAt.notNull}")
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "updated_at")
+
+    @NotNull(message = "{course.updatedAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
     private Date updatedAt;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "courseId")
+
+    // ===== RELATIONSHIPS =====
+    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Wishlist> wishlistSet;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "courseId")
+
+    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<CourseRating> courseRatingSet;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "courseId")
+
+    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Enrollment> enrollmentSet;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "courseId")
+
+    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<CourseSection> courseSectionSet;
+
+    @ManyToOne(optional = false)
     @JoinColumn(name = "category_id", referencedColumnName = "id")
-    @ManyToOne(optional = false)
     private Category categoryId;
-    @JoinColumn(name = "instructor_id", referencedColumnName = "id")
+
     @ManyToOne(optional = false)
+    @JoinColumn(name = "instructor_id", referencedColumnName = "id")
     private User instructorId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "courseId")
+
+    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<CartItem> cartItemSet;
+
     @OneToMany(mappedBy = "courseId")
     @JsonIgnore
     private Set<ChatThread> chatThreadSet;
 
+    // ===== Constructors =====
     public Course() {
     }
 
@@ -335,5 +359,5 @@ public class Course implements Serializable {
     public String toString() {
         return "com.pnam.pojo.Course[ id=" + id + " ]";
     }
-    
+
 }

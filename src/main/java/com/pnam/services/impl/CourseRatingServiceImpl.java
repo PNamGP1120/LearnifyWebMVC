@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -17,37 +18,27 @@ public class CourseRatingServiceImpl implements CourseRatingService {
     private CourseRatingRepository ratingRepo;
 
     @Override
-    public CourseRating getCourseRatingById(Long id) {
+    public List<CourseRating> getRatings(Map<String, String> params) {
+        return ratingRepo.getRatings(params);
+    }
+
+    @Override
+    public long countRatings(Map<String, String> params) {
+        return ratingRepo.countRatings(params);
+    }
+
+    @Override
+    public CourseRating getRatingById(Long id) {
         return ratingRepo.findById(id);
     }
 
     @Override
-    public List<CourseRating> getRatingsByCourse(Long courseId) {
-        return ratingRepo.findByCourse(courseId);
+    public void saveRating(CourseRating rating) {
+        ratingRepo.save(rating);
     }
 
     @Override
-    public List<CourseRating> getRatingsByStudent(Long studentId) {
-        return ratingRepo.findByStudent(studentId);
-    }
-
-    @Override
-    public CourseRating getRatingByCourseAndStudent(Long courseId, Long studentId) {
-        return ratingRepo.findByCourseAndStudent(courseId, studentId);
-    }
-
-    @Override
-    public CourseRating createCourseRating(CourseRating cr) {
-        return ratingRepo.save(cr);
-    }
-
-    @Override
-    public CourseRating updateCourseRating(CourseRating cr) {
-        return ratingRepo.save(cr);
-    }
-
-    @Override
-    public void deleteCourseRating(Long id) {
+    public void deleteRating(Long id) {
         ratingRepo.delete(id);
     }
 }

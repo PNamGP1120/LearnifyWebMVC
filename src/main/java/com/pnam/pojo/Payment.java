@@ -1,35 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-/**
- *
- * @author pnam
- */
 @Entity
 @Table(name = "payment")
 @XmlRootElement
@@ -41,49 +19,52 @@ import java.util.Date;
     @NamedQuery(name = "Payment.findByCurrency", query = "SELECT p FROM Payment p WHERE p.currency = :currency"),
     @NamedQuery(name = "Payment.findByGatewayTxnId", query = "SELECT p FROM Payment p WHERE p.gatewayTxnId = :gatewayTxnId"),
     @NamedQuery(name = "Payment.findByStatus", query = "SELECT p FROM Payment p WHERE p.status = :status"),
-    @NamedQuery(name = "Payment.findByCreatedAt", query = "SELECT p FROM Payment p WHERE p.createdAt = :createdAt")})
+    @NamedQuery(name = "Payment.findByCreatedAt", query = "SELECT p FROM Payment p WHERE p.createdAt = :createdAt")
+})
 public class Payment implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "id")
     private Long id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 7)
-    @Column(name = "method")
+
+    @NotBlank(message = "{payment.method.notBlank}")
+    @Size(max = 7, message = "{payment.method.size}")
+    @Column(name = "method", nullable = false, length = 7)
     private String method;
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "amount")
+
+    @NotNull(message = "{payment.amount.notNull}")
+    @DecimalMin(value = "0.0", inclusive = false, message = "{payment.amount.min}")
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 3)
-    @Column(name = "currency")
+
+    @NotBlank(message = "{payment.currency.notBlank}")
+    @Size(max = 3, message = "{payment.currency.size}")
+    @Column(name = "currency", nullable = false, length = 3)
     private String currency;
-    @Size(max = 190)
-    @Column(name = "gateway_txn_id")
+
+    @Size(max = 190, message = "{payment.gatewayTxnId.size}")
+    @Column(name = "gateway_txn_id", length = 190)
     private String gatewayTxnId;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 9)
-    @Column(name = "status")
+
+    @NotBlank(message = "{payment.status.notBlank}")
+    @Size(max = 9, message = "{payment.status.size}")
+    @Column(name = "status", nullable = false, length = 9)
     private String status;
+
+    @Size(max = 65535, message = "{payment.rawWebhook.size}")
     @Lob
-    @Size(max = 65535)
     @Column(name = "raw_webhook")
     private String rawWebhook;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "created_at")
+
+    @NotNull(message = "{payment.createdAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", nullable = false)
     private Date createdAt;
-    @JoinColumn(name = "enrollment_id", referencedColumnName = "id")
+
     @ManyToOne(optional = false)
+    @JoinColumn(name = "enrollment_id", referencedColumnName = "id")
     @JsonIgnore
     private Enrollment enrollmentId;
 
@@ -199,5 +180,5 @@ public class Payment implements Serializable {
     public String toString() {
         return "com.pnam.pojo.Payment[ id=" + id + " ]";
     }
-    
+
 }

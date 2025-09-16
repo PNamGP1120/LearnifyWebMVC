@@ -3,57 +3,47 @@ package com.pnam.services.impl;
 import com.pnam.pojo.Enrollment;
 import com.pnam.repositories.EnrollmentRepository;
 import com.pnam.services.EnrollmentService;
-import com.pnam.services.EnrollmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
 public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Autowired
-    private EnrollmentRepository enrollmentRepo;
+    private EnrollmentRepository repo;
+
+    @Override
+    public List<Enrollment> getEnrollments(Map<String, String> params) {
+        return repo.getEnrollments(params);
+    }
+
+    @Override
+    public long countEnrollments(Map<String, String> params) {
+        return repo.countEnrollments(params);
+    }
 
     @Override
     public Enrollment getEnrollmentById(Long id) {
-        return enrollmentRepo.findById(id);
+        return repo.findById(id);
     }
 
     @Override
-    public List<Enrollment> getEnrollmentsByStudent(Long studentId) {
-        return enrollmentRepo.findByStudent(studentId);
+    public void createEnrollment(Enrollment e) {
+        repo.save(e);
     }
 
     @Override
-    public List<Enrollment> getEnrollmentsByCourse(Long courseId) {
-        return enrollmentRepo.findByCourse(courseId);
-    }
-
-    @Override
-    public Enrollment getEnrollmentByCourseAndStudent(Long courseId, Long studentId) {
-        return enrollmentRepo.findByCourseAndStudent(courseId, studentId);
-    }
-
-    @Override
-    public Enrollment createEnrollment(Enrollment e) {
-        return enrollmentRepo.save(e);
-    }
-
-    @Override
-    public Enrollment updateEnrollment(Enrollment e) {
-        return enrollmentRepo.save(e);
+    public void updateEnrollment(Enrollment e) {
+        repo.save(e);
     }
 
     @Override
     public void deleteEnrollment(Long id) {
-        enrollmentRepo.delete(id);
-    }
-
-    @Override
-    public List<Enrollment> getAllEnrollments() {
-        return enrollmentRepo.getAllEnrollments();
+        repo.delete(id);
     }
 }

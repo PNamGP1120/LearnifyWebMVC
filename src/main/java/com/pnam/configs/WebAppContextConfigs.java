@@ -4,9 +4,11 @@ import com.pnam.validator.WebAppValidator;
 import com.pnam.validator.UserValidator;
 import java.util.HashSet;
 import java.util.Set;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.validation.Validator;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
@@ -32,13 +34,19 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
 
     // Bean cho Bean Validation (Hibernate Validator)
     @Bean
-    public LocalValidatorFactoryBean validator() {
-        return new LocalValidatorFactoryBean();
+    public MessageSource messageSource() {
+        ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+        source.setBasename("messages"); // tên file: messages.properties (không cần đuôi .properties)
+        source.setDefaultEncoding("UTF-8");
+        return source;
     }
 
-    @Override
-    public Validator getValidator() {
-        return validator();
+    // Kết hợp Bean Validation với messages.properties
+    @Bean
+    public LocalValidatorFactoryBean getValidator() {
+        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+        bean.setValidationMessageSource(messageSource());
+        return bean;
     }
 
     // Bean cho WebAppValidator (gộp Bean Validation + Spring Validator)

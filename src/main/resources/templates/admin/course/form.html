@@ -1,0 +1,93 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <h2 class="my-4" th:text="${course.id != null ? '✏ Sửa Khoá học' : '➕ Thêm Khoá học'}"></h2>
+
+        <form th:action="@{${course.id != null ? '/admin/courses/' + course.id + '/edit' : '/admin/courses/add'}}"
+              th:object="${course}" method="post" class="row g-3 needs-validation" novalidate>
+
+            <!-- Tiêu đề -->
+            <div class="col-md-6">
+                <label for="title" class="form-label">Tiêu đề</label>
+                <input type="text" th:field="*{title}" id="title" class="form-control" required/>
+                <div class="text-danger" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+            </div>
+
+            <!-- Slug -->
+            <div class="col-md-6">
+                <label for="slug" class="form-label">Slug</label>
+                <input type="text" th:field="*{slug}" id="slug" class="form-control"/>
+                <div class="text-danger" th:if="${#fields.hasErrors('slug')}" th:errors="*{slug}"></div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="col-12">
+                <label for="description" class="form-label">Mô tả</label>
+                <textarea th:field="*{description}" id="description" rows="4" class="form-control"></textarea>
+                <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+            </div>
+
+            <!-- Giá -->
+            <div class="col-md-4">
+                <label for="price" class="form-label">Giá (VND)</label>
+                <input type="number" th:field="*{price}" id="price" class="form-control" min="0" step="1000"/>
+                <div class="text-danger" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+            </div>
+
+            <!-- Danh mục -->
+            <div class="col-md-4">
+                <label for="categoryId" class="form-label">Danh mục</label>
+                <select th:field="*{categoryId}" id="categoryId" class="form-select" required>
+                    <option value="">-- Chọn danh mục --</option>
+                    <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat.name}"
+                            th:selected="${course.categoryId != null and course.categoryId.id == cat.id}"></option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+            </div>
+<!--
+             Giảng viên 
+            <div class="col-md-4">
+                <label for="instructorId" class="form-label">Giảng viên</label>
+                <select th:field="*{instructorId}" id="instructorId" class="form-select" required>
+                    <option value="">-- Chọn giảng viên --</option>
+                    <option th:each="i : ${instructors}" th:value="${i}" th:text="${i.fullName}"
+                            th:selected="${course.instructorId != null and course.instructorId.id == i.id}"></option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('instructorId')}" th:errors="*{instructorId}"></div>
+            </div>-->
+
+            <!-- Trạng thái -->
+            <div class="col-md-4">
+                <label for="status" class="form-label">Trạng thái</label>
+                <select th:field="*{status}" id="status" class="form-select">
+                    <option value="DRAFT">Nháp</option>
+                    <option value="PUBLISHED">Đã xuất bản</option>
+                    <option value="ARCHIVED">Đã lưu trữ</option>
+                </select>
+                <div class="text-danger" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+            </div>
+
+            <!-- Ảnh đại diện -->
+            <div class="col-md-8">
+                <label for="thumbnailUrl" class="form-label">Ảnh đại diện (URL)</label>
+                <input type="text" th:field="*{thumbnailUrl}" id="thumbnailUrl" class="form-control"/>
+                <div class="text-danger" th:if="${#fields.hasErrors('thumbnailUrl')}" th:errors="*{thumbnailUrl}"></div>
+            </div>
+
+            <!-- Nút -->
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    💾 <span th:text="${course.id != null ? 'Cập nhật' : 'Thêm mới'}"></span>
+                </button>
+                <a th:href="@{/admin/courses}" class="btn btn-secondary">⬅ Quay lại</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+</body>
+</html>

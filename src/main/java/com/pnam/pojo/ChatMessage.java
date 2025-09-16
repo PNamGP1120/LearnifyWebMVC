@@ -1,33 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Basic;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- *
- * @author pnam
- */
 @Entity
 @Table(name = "chat_message")
 @XmlRootElement
@@ -35,31 +14,33 @@ import java.util.Date;
     @NamedQuery(name = "ChatMessage.findAll", query = "SELECT c FROM ChatMessage c"),
     @NamedQuery(name = "ChatMessage.findById", query = "SELECT c FROM ChatMessage c WHERE c.id = :id"),
     @NamedQuery(name = "ChatMessage.findByContent", query = "SELECT c FROM ChatMessage c WHERE c.content = :content"),
-    @NamedQuery(name = "ChatMessage.findBySentAt", query = "SELECT c FROM ChatMessage c WHERE c.sentAt = :sentAt")})
+    @NamedQuery(name = "ChatMessage.findBySentAt", query = "SELECT c FROM ChatMessage c WHERE c.sentAt = :sentAt")
+})
 public class ChatMessage implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "id")
     private Long id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 1000)
-    @Column(name = "content")
+
+    @NotBlank(message = "{chatMessage.content.notBlank}")
+    @Size(max = 1000, message = "{chatMessage.content.size}")
+    @Column(name = "content", nullable = false, length = 1000)
     private String content;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "sent_at")
+
+    @NotNull(message = "{chatMessage.sentAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "sent_at", nullable = false)
     private Date sentAt;
-    @JoinColumn(name = "thread_id", referencedColumnName = "id")
+
     @ManyToOne(optional = false)
+    @JoinColumn(name = "thread_id", referencedColumnName = "id")
     @JsonIgnore
     private ChatThread threadId;
-    @JoinColumn(name = "sender_id", referencedColumnName = "id")
+
     @ManyToOne(optional = false)
+    @JoinColumn(name = "sender_id", referencedColumnName = "id")
     @JsonIgnore
     private User senderId;
 
@@ -140,5 +121,5 @@ public class ChatMessage implements Serializable {
     public String toString() {
         return "com.pnam.pojo.ChatMessage[ id=" + id + " ]";
     }
-    
+
 }
