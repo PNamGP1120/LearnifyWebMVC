@@ -2,34 +2,44 @@ package com.pnam.repositories.impl;
 
 import com.pnam.pojo.User;
 import com.pnam.repositories.UserRepository;
+import com.pnam.repositories.base.BaseRepository;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.hibernate.Session;
-import org.hibernate.query.Query;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Repository
 @Transactional
-public class UserRepositoryImpl implements UserRepository {
+public class UserRepositoryImpl extends BaseRepository<User, Long>
+        implements UserRepository {
 
-    @Autowired
-    private LocalSessionFactoryBean sessionFactory;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    public UserRepositoryImpl(BCryptPasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    protected Class<User> getEntityClass() {
+        return User.class;
+    }
 
     @Override
     public User getUserByUsername(String username) {
-        Session s = sessionFactory.getObject().getCurrentSession();
-        Query q = s.createQuery("FROM User WHERE username = :un");
-        q.setParameter("un", username);
         try {
+            Session s = getSession();
+            Query q = s.createNamedQuery("User.findByUsername", User.class);
+            q.setParameter("username", username);
             return (User) q.getSingleResult();
         } catch (NoResultException e) {
             return null;
@@ -38,10 +48,10 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User getUserByEmail(String email) {
-        Session s = sessionFactory.getObject().getCurrentSession();
-        Query q = s.createQuery("FROM User WHERE email = :em");
-        q.setParameter("em", email);
         try {
+            Session s = getSession();
+            Query q = s.createNamedQuery("User.findByEmail", User.class);
+            q.setParameter("email", email);
             return (User) q.getSingleResult();
         } catch (NoResultException e) {
             return null;
@@ -50,51 +60,44 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void addUser(User user) {
-        Session s = sessionFactory.getObject().getCurrentSession();
-        s.persist(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        getSession().persist(user);
     }
 
     @Override
     public void updateUser(User user) {
-        Session s = sessionFactory.getObject().getCurrentSession();
-        s.merge(user);
+        getSession().merge(user);
     }
 
     @Override
     public void deleteUser(Long id) {
-        Session s = sessionFactory.getObject().getCurrentSession();
-        User u = s.get(User.class, id);
-        if (u != null) {
-            s.remove(u);
-        }
+        super.delete(id);
     }
 
     @Override
     public User getUserById(Long id) {
-        Session s = sessionFactory.getObject().getCurrentSession();
-        return s.find(User.class, id);
+        return super.findById(id);
     }
 
     @Override
     public List<User> getAllUsers() {
-        Session s = sessionFactory.getObject().getCurrentSession();
-        Query<User> q = s.createQuery("FROM User", User.class);
+        Session s = getSession();
+        Query q = s.createNamedQuery("User.findAll", User.class);
         return q.getResultList();
     }
 
     @Override
     public List<User> getUsers(Map<String, String> params) {
-        Session s = sessionFactory.getObject().getCurrentSession();
+        Session s = getSession();
         CriteriaBuilder cb = s.getCriteriaBuilder();
         CriteriaQuery<User> cq = cb.createQuery(User.class);
         Root<User> root = cq.from(User.class);
         cq.select(root);
 
         List<Predicate> predicates = new ArrayList<>();
-
         if (params != null) {
             String kw = params.get("kw");
-            if (kw != null && !kw.isEmpty()) {
+            if (kw != null && !kw.isBlank()) {
                 Predicate p1 = cb.like(root.get("username"), "%" + kw + "%");
                 Predicate p2 = cb.like(root.get("email"), "%" + kw + "%");
                 Predicate p3 = cb.like(root.get("fullName"), "%" + kw + "%");
@@ -102,27 +105,26 @@ public class UserRepositoryImpl implements UserRepository {
             }
 
             String role = params.get("role");
-            if (role != null && !role.isEmpty()) {
+            if (role != null && !role.isBlank()) {
                 predicates.add(cb.equal(root.get("role"), role));
             }
 
             String status = params.get("status");
-            if (status != null && !status.isEmpty()) {
+            if (status != null && !status.isBlank()) {
                 predicates.add(cb.equal(root.get("status"), status));
             }
         }
 
-        cq.where(predicates.toArray(Predicate[]::new));
-        Query<User> query = s.createQuery(cq);
-
-        if (params != null && params.containsKey("page")) {
-            int page = Integer.parseInt(params.get("page"));
-            int pageSize = params.containsKey("pageSize")
-                    ? Integer.parseInt(params.get("pageSize"))
-                    : 10;
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
         }
+
+        jakarta.persistence.Query query = s.createQuery(cq);
+
+        int page = getPage(params);
+        int pageSize = getPageSize(params);
+        query.setFirstResult((page - 1) * pageSize);
+        query.setMaxResults(pageSize);
 
         return query.getResultList();
     }

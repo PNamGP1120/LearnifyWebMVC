@@ -2,80 +2,101 @@ package com.pnam.repositories.impl;
 
 import com.pnam.pojo.Lesson;
 import com.pnam.repositories.LessonRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import com.pnam.repositories.base.BaseRepository;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Repository
 @Transactional
-public class LessonRepositoryImpl implements LessonRepository {
+public class LessonRepositoryImpl extends BaseRepository<Lesson, Long>
+        implements LessonRepository {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Override
+    protected Class<Lesson> getEntityClass() {
+        return Lesson.class;
+    }
 
     @Override
     public List<Lesson> getLessons(Map<String, String> params) {
-        String jpql = "SELECT l FROM Lesson l WHERE 1=1";
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Lesson> cq = cb.createQuery(Lesson.class);
+        Root<Lesson> root = cq.from(Lesson.class);
+        cq.select(root);
 
-        String kw = params.get("kw");
-        if (kw != null && !kw.isEmpty()) {
-            jpql += " AND (l.title LIKE :kw OR l.contentUrl LIKE :kw)";
+        List<Predicate> predicates = new ArrayList<>();
+        if (params != null) {
+            String kw = params.get("kw");
+            if (kw != null && !kw.isBlank()) {
+                predicates.add(cb.or(
+                        cb.like(root.get("title"), "%" + kw + "%"),
+                        cb.like(root.get("contentUrl"), "%" + kw + "%")
+                ));
+            }
         }
 
-        TypedQuery<Lesson> q = em.createQuery(jpql, Lesson.class);
-        if (kw != null && !kw.isEmpty()) {
-            q.setParameter("kw", "%" + kw + "%");
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
         }
 
-        int page = params.get("page") != null ? Integer.parseInt(params.get("page")) : 1;
-        int pageSize = params.get("pageSize") != null ? Integer.parseInt(params.get("pageSize")) : 10;
-        q.setFirstResult((page - 1) * pageSize);
-        q.setMaxResults(pageSize);
+        Query<Lesson> query = s.createQuery(cq);
 
-        return q.getResultList();
+        int page = getPage(params);
+        int pageSize = getPageSize(params);
+        query.setFirstResult((page - 1) * pageSize);
+        query.setMaxResults(pageSize);
+
+        return query.getResultList();
     }
 
     @Override
     public long countLessons(Map<String, String> params) {
-        String jpql = "SELECT COUNT(l) FROM Lesson l WHERE 1=1";
-        String kw = params.get("kw");
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<Lesson> root = cq.from(Lesson.class);
+        cq.select(cb.count(root));
 
-        if (kw != null && !kw.isEmpty()) {
-            jpql += " AND (l.title LIKE :kw OR l.contentUrl LIKE :kw)";
+        List<Predicate> predicates = new ArrayList<>();
+        if (params != null) {
+            String kw = params.get("kw");
+            if (kw != null && !kw.isBlank()) {
+                predicates.add(cb.or(
+                        cb.like(root.get("title"), "%" + kw + "%"),
+                        cb.like(root.get("contentUrl"), "%" + kw + "%")
+                ));
+            }
         }
 
-        TypedQuery<Long> q = em.createQuery(jpql, Long.class);
-        if (kw != null && !kw.isEmpty()) {
-            q.setParameter("kw", "%" + kw + "%");
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
         }
 
-        return q.getSingleResult();
+        return s.createQuery(cq).getSingleResult();
     }
 
     @Override
     public Lesson findById(Long id) {
-        return em.find(Lesson.class, id);
+        return super.findById(id);
     }
 
     @Override
     public void save(Lesson lesson) {
-        if (lesson.getId() == null) {
-            em.persist(lesson);
-        } else {
-            em.merge(lesson);
-        }
+        super.save(lesson, lesson.getId());
     }
 
     @Override
     public void delete(Long id) {
-        Lesson l = findById(id);
-        if (l != null) {
-            em.remove(l);
-        }
+        super.delete(id);
     }
 }

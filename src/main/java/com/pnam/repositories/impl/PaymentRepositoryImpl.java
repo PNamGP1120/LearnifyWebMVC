@@ -2,66 +2,62 @@ package com.pnam.repositories.impl;
 
 import com.pnam.pojo.Payment;
 import com.pnam.repositories.PaymentRepository;
+import com.pnam.repositories.base.BaseRepository;
 import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Repository
 @Transactional
-public class PaymentRepositoryImpl implements PaymentRepository {
+public class PaymentRepositoryImpl extends BaseRepository<Payment, Long>
+        implements PaymentRepository {
 
-    private static final int PAGE_SIZE = 10;
-
-    @Autowired
-    private LocalSessionFactoryBean factory;
-
-    private Session getSession() {
-        return factory.getObject().getCurrentSession();
+    @Override
+    protected Class<Payment> getEntityClass() {
+        return Payment.class;
     }
 
     @Override
     public List<Payment> getPayments(Map<String, String> params) {
         Session s = getSession();
-        CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Payment> q = b.createQuery(Payment.class);
-        Root<Payment> root = q.from(Payment.class);
-        q.select(root);
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Payment> cq = cb.createQuery(Payment.class);
+        Root<Payment> root = cq.from(Payment.class);
+        cq.select(root);
 
         List<Predicate> predicates = new ArrayList<>();
-
         if (params != null) {
             String enrollmentId = params.get("enrollmentId");
             if (enrollmentId != null && !enrollmentId.isBlank()) {
-                predicates.add(b.equal(root.get("enrollmentId").get("id"), Long.parseLong(enrollmentId)));
+                predicates.add(cb.equal(root.get("enrollmentId").get("id"), Long.parseLong(enrollmentId)));
             }
 
             String status = params.get("status");
             if (status != null && !status.isBlank()) {
-                predicates.add(b.equal(root.get("status"), status));
+                predicates.add(cb.equal(root.get("status"), status));
             }
         }
 
-        q.where(predicates.toArray(Predicate[]::new));
-        q.orderBy(b.desc(root.get("createdAt")));
-
-        Query query = s.createQuery(q);
-        if (params != null && params.containsKey("page")) {
-            int page = Integer.parseInt(params.get("page"));
-            query.setFirstResult((page - 1) * PAGE_SIZE);
-            query.setMaxResults(PAGE_SIZE);
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
         }
+
+        cq.orderBy(cb.desc(root.get("createdAt")));
+
+        Query<Payment> query = s.createQuery(cq);
+        int page = getPage(params);
+        int pageSize = getPageSize(params);
+        query.setFirstResult((page - 1) * pageSize);
+        query.setMaxResults(pageSize);
 
         return query.getResultList();
     }
@@ -69,43 +65,38 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     @Override
     public long countPayments(Map<String, String> params) {
         Session s = getSession();
-        CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Long> q = b.createQuery(Long.class);
-        Root<Payment> root = q.from(Payment.class);
-        q.select(b.count(root));
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<Payment> root = cq.from(Payment.class);
+        cq.select(cb.count(root));
 
         List<Predicate> predicates = new ArrayList<>();
         if (params != null) {
             String status = params.get("status");
             if (status != null && !status.isBlank()) {
-                predicates.add(b.equal(root.get("status"), status));
+                predicates.add(cb.equal(root.get("status"), status));
             }
         }
-        q.where(predicates.toArray(Predicate[]::new));
 
-        return s.createQuery(q).getSingleResult();
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
+        }
+
+        return s.createQuery(cq).getSingleResult();
     }
 
     @Override
     public Payment findById(Long id) {
-        return getSession().get(Payment.class, id);
+        return super.findById(id);
     }
 
     @Override
     public void save(Payment p) {
-        Session s = getSession();
-        if (p.getId() == null) {
-            s.persist(p);
-        } else {
-            s.merge(p);
-        }
+        super.save(p, p.getId());
     }
 
     @Override
     public void delete(Long id) {
-        Payment p = findById(id);
-        if (p != null) {
-            getSession().remove(p);
-        }
+        super.delete(id);
     }
 }

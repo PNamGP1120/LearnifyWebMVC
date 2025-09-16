@@ -4,45 +4,20 @@ import java.util.List;
 import java.util.Map;
 
 public interface StatsRepository {
-    // Users
-    Map<String, Long> countUsersByRole();
-    Long countPendingInstructors();
-    List<Object[]> countUserRegistrationByMonth(int year);
+    // ==== ADMIN ====
+    List<Object[]> statsUsersByRole(Map<String, String> filters);
+    List<Object[]> statsCoursesByCategory(Map<String, String> filters);
+    List<Object[]> statsRevenueByMonth(Map<String, String> filters);
+    List<Object[]> statsTopInstructorsByRevenue(Map<String, String> filters, int limit);
+    List<Object[]> statsTopCoursesByEnrollments(Map<String, String> filters, int limit);
 
-    // Courses
-    Map<String, Long> countCoursesByStatus();
-    List<Object[]> countCoursesByCategory();
-    List<Object[]> countCoursesByMonth(int year);
+    // ==== INSTRUCTOR ====
+    List<Object[]> statsEnrollmentsByCourse(Map<String, String> filters);
+    List<Object[]> statsRevenueByCourse(Map<String, String> filters);
+    List<Object[]> statsRevenueByMonthForInstructor(Map<String, String> filters);
 
-    // Enrollments
-    List<Object[]> countEnrollmentsByCourse();
-    List<Object[]> countEnrollmentsByInstructor();
-    List<Object[]> countEnrollmentsByMonth(int year);
-    List<Object[]> topCoursesByEnrollments(int limit);
-
-    // Payments
-    List<Object[]> revenueByCourse();
-    List<Object[]> revenueByInstructor();
-    List<Object[]> revenueByMonth(int year);
-    Map<String, Long> countPaymentsByStatus();
-
-    // Ratings
-    List<Object[]> avgRatingByCourse();
-    List<Object[]> ratingDistributionByCourse(Long courseId);
-    List<Object[]> topCoursesByRating(int limit);
-
-    // Progress
-    List<Object[]> completionRateByCourse();
-    List<Object[]> avgCompletionRateByCourse();
-
-    // System activity
-    Long countNotifications();
-    Long countChatMessages();
-    List<Object[]> countChatByCourse();
-    List<Object[]> auditLogStats();
-    
-    
-    List<Object[]> countUsersByCourse();      
-    List<Object[]> countCoursesByUser();        
-    List<Object[]> countInstructorsByCategory(); 
+    // ==== STUDENT ====
+    List<Object[]> statsCoursesByStudent(Map<String, String> filters);
+    List<Object[]> statsProgressByStudent(Map<String, String> filters);
+    List<Object[]> statsPaymentsByStudent(Map<String, String> filters);
 }

@@ -6,6 +6,10 @@ import com.pnam.pojo.User;
 import com.pnam.repositories.UserRepository;
 import com.pnam.services.UserService;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,11 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service("userDetailsService")
@@ -68,19 +67,16 @@ public class UserServiceImpl implements UserService {
     public void updateUser(User user) {
         User existing = userRepo.getUserById(user.getId());
         if (existing != null) {
-            // Giữ nguyên các trường không thay đổi
             existing.setUsername(user.getUsername());
             existing.setFullName(user.getFullName());
             existing.setEmail(user.getEmail());
             existing.setRole(user.getRole());
             existing.setStatus(user.getStatus());
 
-            // Nếu nhập mật khẩu mới thì encode, ngược lại giữ mật khẩu cũ
             if (user.getPassword() != null && !user.getPassword().isBlank()) {
                 existing.setPassword(passwordEncoder.encode(user.getPassword()));
             }
 
-            // Nếu có avatar mới thì update, không thì giữ avatar cũ
             if (user.getAvatarUrl() != null && !user.getAvatarUrl().isBlank()) {
                 existing.setAvatarUrl(user.getAvatarUrl());
             }
@@ -92,18 +88,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void lockUser(Long id) {
-        User u = userRepo.getUserByUsername(getUserByUsername("username").getUsername()); // hoặc lấy theo id
+        User u = userRepo.getUserById(id);
         if (u != null) {
             u.setStatus("LOCKED");
+            u.setUpdatedAt(new Date());
             userRepo.updateUser(u);
         }
     }
 
     @Override
     public void unlockUser(Long id) {
-        User u = userRepo.getUserByEmail(getUserByEmail("email").getEmail()); // hoặc lấy theo id
+        User u = userRepo.getUserById(id);
         if (u != null) {
             u.setStatus("ACTIVE");
+            u.setUpdatedAt(new Date());
             userRepo.updateUser(u);
         }
     }
@@ -143,5 +141,4 @@ public class UserServiceImpl implements UserService {
     public List<User> getUsers(Map<String, String> params) {
         return userRepo.getUsers(params);
     }
-
 }

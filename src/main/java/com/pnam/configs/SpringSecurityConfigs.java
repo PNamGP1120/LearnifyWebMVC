@@ -65,7 +65,7 @@ public class SpringSecurityConfigs {
                 .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/doLogin") 
-                .defaultSuccessUrl("/admin", true)
+                .defaultSuccessUrl("/admin/stats", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
                 )

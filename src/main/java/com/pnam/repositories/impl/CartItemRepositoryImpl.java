@@ -2,62 +2,70 @@ package com.pnam.repositories.impl;
 
 import com.pnam.pojo.CartItem;
 import com.pnam.repositories.CartItemRepository;
-import jakarta.persistence.TypedQuery;
+import com.pnam.repositories.base.BaseRepository;
 import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.util.List;
 
 @Repository
 @Transactional
-public class CartItemRepositoryImpl implements CartItemRepository {
+public class CartItemRepositoryImpl extends BaseRepository<CartItem, Long>
+        implements CartItemRepository {
 
-    @Autowired
-    private LocalSessionFactoryBean factory;
+    @Override
+    protected Class<CartItem> getEntityClass() {
+        return CartItem.class;
+    }
 
     @Override
     public CartItem findById(Long id) {
-        return factory.getObject().getCurrentSession().find(CartItem.class, id);
-    }
-
-    @Override
-    public List<CartItem> findByCart(Long cartId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<CartItem> q = s.createQuery(
-            "SELECT ci FROM CartItem ci WHERE ci.cartId.id = :cid", CartItem.class);
-        q.setParameter("cid", cartId);
-        return q.getResultList();
-    }
-
-    @Override
-    public CartItem findByCartAndCourse(Long cartId, Long courseId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<CartItem> q = s.createQuery(
-            "SELECT ci FROM CartItem ci WHERE ci.cartId.id = :cid AND ci.courseId.id = :coid",
-            CartItem.class);
-        q.setParameter("cid", cartId);
-        q.setParameter("coid", courseId);
-        return q.getResultStream().findFirst().orElse(null);
+        return super.findById(id);
     }
 
     @Override
     public CartItem save(CartItem ci) {
-        Session s = factory.getObject().getCurrentSession();
-        if (ci.getId() == null) {
-            s.persist(ci);
-            return ci;
-        } else {
-            return s.merge(ci);
-        }
+        return super.save(ci, ci.getId());
     }
 
     @Override
     public void delete(Long id) {
-        Session s = factory.getObject().getCurrentSession();
-        CartItem ci = s.find(CartItem.class, id);
-        if (ci != null) s.remove(ci);
+        super.delete(id);
+    }
+
+    @Override
+    public List<CartItem> findByCart(Long cartId) {
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<CartItem> cq = cb.createQuery(CartItem.class);
+        Root<CartItem> root = cq.from(CartItem.class);
+        cq.select(root);
+
+        cq.where(cb.equal(root.get("cartId").get("id"), cartId));
+
+        Query<CartItem> query = s.createQuery(cq);
+        return query.getResultList();
+    }
+
+    @Override
+    public CartItem findByCartAndCourse(Long cartId, Long courseId) {
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<CartItem> cq = cb.createQuery(CartItem.class);
+        Root<CartItem> root = cq.from(CartItem.class);
+        cq.select(root);
+
+        Predicate p1 = cb.equal(root.get("cartId").get("id"), cartId);
+        Predicate p2 = cb.equal(root.get("courseId").get("id"), courseId);
+        cq.where(cb.and(p1, p2));
+
+        Query<CartItem> query = s.createQuery(cq);
+        return query.getResultStream().findFirst().orElse(null);
     }
 }

@@ -2,81 +2,111 @@ package com.pnam.repositories.impl;
 
 import com.pnam.pojo.CourseRating;
 import com.pnam.repositories.CourseRatingRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
+import com.pnam.repositories.base.BaseRepository;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Repository
 @Transactional
-public class CourseRatingRepositoryImpl implements CourseRatingRepository {
+public class CourseRatingRepositoryImpl extends BaseRepository<CourseRating, Long>
+        implements CourseRatingRepository {
 
-    @PersistenceContext
-    private EntityManager em;
+    @Override
+    protected Class<CourseRating> getEntityClass() {
+        return CourseRating.class;
+    }
 
     @Override
     public List<CourseRating> getRatings(Map<String, String> params) {
-        String jpql = "SELECT r FROM CourseRating r WHERE 1=1";
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<CourseRating> cq = cb.createQuery(CourseRating.class);
+        Root<CourseRating> root = cq.from(CourseRating.class);
+        cq.select(root);
 
-        String kw = params.get("kw");
-        if (kw != null && !kw.isEmpty()) {
-            jpql += " AND r.comment LIKE :kw";
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            // lọc theo keyword trong comment
+            String kw = params.get("kw");
+            if (kw != null && !kw.isBlank()) {
+                predicates.add(cb.like(root.get("comment"), "%" + kw + "%"));
+            }
+
+            // lọc theo courseId
+            String courseId = params.get("courseId");
+            if (courseId != null && !courseId.isBlank()) {
+                predicates.add(cb.equal(root.get("courseId").get("id"), Long.parseLong(courseId)));
+            }
         }
 
-        TypedQuery<CourseRating> q = em.createQuery(jpql, CourseRating.class);
-        if (kw != null && !kw.isEmpty()) {
-            q.setParameter("kw", "%" + kw + "%");
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
         }
 
-        int page = params.get("page") != null ? Integer.parseInt(params.get("page")) : 1;
-        int pageSize = params.get("pageSize") != null ? Integer.parseInt(params.get("pageSize")) : 10;
+        cq.orderBy(cb.desc(root.get("createdAt")));
 
-        q.setFirstResult((page - 1) * pageSize);
-        q.setMaxResults(pageSize);
+        Query<CourseRating> query = s.createQuery(cq);
 
-        return q.getResultList();
+        int page = getPage(params);
+        int pageSize = getPageSize(params);
+        query.setFirstResult((page - 1) * pageSize);
+        query.setMaxResults(pageSize);
+
+        return query.getResultList();
     }
 
     @Override
     public long countRatings(Map<String, String> params) {
-        String jpql = "SELECT COUNT(r) FROM CourseRating r WHERE 1=1";
-        String kw = params.get("kw");
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<CourseRating> root = cq.from(CourseRating.class);
+        cq.select(cb.count(root));
 
-        if (kw != null && !kw.isEmpty()) {
-            jpql += " AND r.comment LIKE :kw";
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (params != null) {
+            String kw = params.get("kw");
+            if (kw != null && !kw.isBlank()) {
+                predicates.add(cb.like(root.get("comment"), "%" + kw + "%"));
+            }
+
+            String courseId = params.get("courseId");
+            if (courseId != null && !courseId.isBlank()) {
+                predicates.add(cb.equal(root.get("courseId").get("id"), Long.parseLong(courseId)));
+            }
         }
 
-        TypedQuery<Long> q = em.createQuery(jpql, Long.class);
-        if (kw != null && !kw.isEmpty()) {
-            q.setParameter("kw", "%" + kw + "%");
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
         }
 
-        return q.getSingleResult();
+        return s.createQuery(cq).getSingleResult();
     }
 
     @Override
     public CourseRating findById(Long id) {
-        return em.find(CourseRating.class, id);
+        return super.findById(id);
     }
 
     @Override
     public void save(CourseRating rating) {
-        if (rating.getId() == null) {
-            em.persist(rating);
-        } else {
-            em.merge(rating);
-        }
+        super.save(rating, rating.getId());
     }
 
     @Override
     public void delete(Long id) {
-        CourseRating r = findById(id);
-        if (r != null) {
-            em.remove(r);
-        }
+        super.delete(id);
     }
 }

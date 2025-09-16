@@ -1,58 +1,55 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.repositories.impl;
 
 import com.pnam.pojo.Progress;
 import com.pnam.repositories.ProgressRepository;
-import jakarta.persistence.TypedQuery;
-import java.util.List;
+import com.pnam.repositories.base.BaseRepository;
 import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- *
- * @author pnam
- */
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+import java.util.List;
+
 @Repository
 @Transactional
-public class ProgressRepositoryImpl implements ProgressRepository {
-    @Autowired
-    private LocalSessionFactoryBean factory;
+public class ProgressRepositoryImpl extends BaseRepository<Progress, Long>
+        implements ProgressRepository {
 
     @Override
-    public Progress findById(Long id) {
-        return factory.getObject().getCurrentSession().find(Progress.class, id);
+    protected Class<Progress> getEntityClass() {
+        return Progress.class;
     }
 
     @Override
-    public List<Progress> findByEnrollment(Long enrollmentId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<Progress> q = s.createQuery(
-            "SELECT p FROM Progress p WHERE p.enrollmentId.id = :eid", Progress.class);
-        q.setParameter("eid", enrollmentId);
-        return q.getResultList();
+    public Progress findById(Long id) {
+        return super.findById(id);
     }
 
     @Override
     public Progress save(Progress p) {
-        Session s = factory.getObject().getCurrentSession();
-        if (p.getId() == null) {
-            s.persist(p);
-            return p;
-        } else {
-            return s.merge(p);
-        }
+        return super.save(p, p.getId());
     }
 
     @Override
     public void delete(Long id) {
-        Session s = factory.getObject().getCurrentSession();
-        Progress p = s.find(Progress.class, id);
-        if (p != null) s.remove(p);
+        super.delete(id);
+    }
+
+    @Override
+    public List<Progress> findByEnrollment(Long enrollmentId) {
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Progress> cq = cb.createQuery(Progress.class);
+        Root<Progress> root = cq.from(Progress.class);
+        cq.select(root);
+
+        cq.where(cb.equal(root.get("enrollmentId").get("id"), enrollmentId));
+        cq.orderBy(cb.asc(root.get("id")));
+
+        Query<Progress> query = s.createQuery(cq);
+        return query.getResultList();
     }
 }

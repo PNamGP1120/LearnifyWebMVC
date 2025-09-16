@@ -1,24 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.repositories.impl;
 
+import com.pnam.pojo.*;
 import com.pnam.repositories.StatsRepository;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import org.hibernate.Session;
-import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- *
- * @author pnam
- */
 @Repository
 @Transactional
 public class StatsRepositoryImpl implements StatsRepository {
@@ -30,226 +23,271 @@ public class StatsRepositoryImpl implements StatsRepository {
         return factory.getObject().getCurrentSession();
     }
 
-    // ===== Users =====
-    @Override
-    public Map<String, Long> countUsersByRole() {
-        Query<Object[]> q = getSession().createQuery(
-                "SELECT u.role, COUNT(u) FROM User u GROUP BY u.role", Object[].class);
-        Map<String, Long> result = new HashMap<>();
-        for (Object[] row : q.getResultList()) {
-            result.put((String) row[0], (Long) row[1]);
+    private Date parseDate(String s) {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse(s);
+        } catch (Exception e) {
+            return null;
         }
-        return result;
     }
 
-    @Override
-    public Long countPendingInstructors() {
-        return getSession().createQuery(
-                "SELECT COUNT(ip) FROM InstructorProfile ip WHERE ip.verifiedByAdmin = false",
-                Long.class).getSingleResult();
-    }
+    // ==== ADMIN ====
 
     @Override
-    public List<Object[]> countUserRegistrationByMonth(int year) {
-        return getSession().createQuery(
-                "SELECT MONTH(u.createdAt), COUNT(u) FROM User u "
-                + "WHERE YEAR(u.createdAt) = :y GROUP BY MONTH(u.createdAt)",
-                Object[].class).setParameter("y", year).getResultList();
-    }
+    public List<Object[]> statsUsersByRole(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+        Root<User> root = q.from(User.class);
 
-    // ===== Courses =====
-    @Override
-    public Map<String, Long> countCoursesByStatus() {
-        Query<Object[]> q = getSession().createQuery(
-                "SELECT c.status, COUNT(c) FROM Course c GROUP BY c.status", Object[].class);
-        Map<String, Long> result = new HashMap<>();
-        for (Object[] row : q.getResultList()) {
-            result.put((String) row[0], (Long) row[1]);
+        q.multiselect(root.get("role"), b.count(root.get("id")));
+        q.groupBy(root.get("role"));
+
+        if (filters != null && filters.containsKey("status")) {
+            q.where(b.equal(root.get("status"), filters.get("status")));
         }
-        return result;
+
+        return s.createQuery(q).getResultList();
     }
 
     @Override
-    public List<Object[]> countCoursesByCategory() {
-        return getSession().createQuery(
-                "SELECT c.categoryId.name, COUNT(c) FROM Course c GROUP BY c.categoryId.name",
-                Object[].class).getResultList();
-    }
+    public List<Object[]> statsCoursesByCategory(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+        Root<Course> root = q.from(Course.class);
+        Join<Course, Category> join = root.join("categoryId", JoinType.INNER);
 
-    @Override
-    public List<Object[]> countCoursesByMonth(int year) {
-        return getSession().createQuery(
-                "SELECT MONTH(c.createdAt), COUNT(c) FROM Course c "
-                + "WHERE YEAR(c.createdAt) = :y GROUP BY MONTH(c.createdAt)",
-                Object[].class).setParameter("y", year).getResultList();
-    }
+        q.multiselect(join.get("name"), b.count(root.get("id")));
+        q.groupBy(join.get("name"));
 
-    // ===== Enrollments =====
-    @Override
-    public List<Object[]> countEnrollmentsByCourse() {
-        return getSession().createQuery(
-                "SELECT e.courseId.title, COUNT(e) FROM Enrollment e GROUP BY e.courseId.title",
-                Object[].class).getResultList();
-    }
-
-    @Override
-    public List<Object[]> countEnrollmentsByInstructor() {
-        return getSession().createQuery(
-                "SELECT e.courseId.instructorId.fullName, COUNT(e) "
-                + "FROM Enrollment e GROUP BY e.courseId.instructorId.fullName",
-                Object[].class).getResultList();
-    }
-
-    @Override
-    public List<Object[]> countEnrollmentsByMonth(int year) {
-        return getSession().createQuery(
-                "SELECT MONTH(e.enrolledAt), COUNT(e) "
-                + "FROM Enrollment e WHERE YEAR(e.enrolledAt) = :y GROUP BY MONTH(e.enrolledAt)",
-                Object[].class).setParameter("y", year).getResultList();
-    }
-
-    @Override
-    public List<Object[]> topCoursesByEnrollments(int limit) {
-        return getSession().createQuery(
-                "SELECT e.courseId.title, COUNT(e) FROM Enrollment e "
-                + "GROUP BY e.courseId.title ORDER BY COUNT(e) DESC",
-                Object[].class).setMaxResults(limit).getResultList();
-    }
-
-    // ===== Payments =====
-    @Override
-    public List<Object[]> revenueByCourse() {
-        return getSession().createQuery(
-                "SELECT e.courseId.title, SUM(p.amount) FROM Payment p JOIN p.enrollmentId e "
-                + "WHERE p.status = 'SUCCEEDED' GROUP BY e.courseId.title",
-                Object[].class).getResultList();
-    }
-
-    @Override
-    public List<Object[]> revenueByInstructor() {
-        return getSession().createQuery(
-                "SELECT e.courseId.instructorId.fullName, SUM(p.amount) "
-                + "FROM Payment p JOIN p.enrollmentId e "
-                + "WHERE p.status = 'SUCCEEDED' GROUP BY e.courseId.instructorId.fullName",
-                Object[].class).getResultList();
-    }
-
-    @Override
-    public List<Object[]> revenueByMonth(int year) {
-        return getSession().createQuery(
-                "SELECT MONTH(p.createdAt), SUM(p.amount) FROM Payment p "
-                + "WHERE YEAR(p.createdAt) = :y AND p.status = 'SUCCEEDED' "
-                + "GROUP BY MONTH(p.createdAt) ORDER BY MONTH(p.createdAt)",
-                Object[].class).setParameter("y", year).getResultList();
-    }
-
-    @Override
-    public Map<String, Long> countPaymentsByStatus() {
-        Query<Object[]> q = getSession().createQuery(
-                "SELECT p.status, COUNT(p) FROM Payment p GROUP BY p.status", Object[].class);
-        Map<String, Long> result = new HashMap<>();
-        for (Object[] row : q.getResultList()) {
-            result.put((String) row[0], (Long) row[1]);
+        if (filters != null && filters.containsKey("status")) {
+            q.where(b.equal(root.get("status"), filters.get("status")));
         }
-        return result;
-    }
 
-    // ===== Ratings =====
-    @Override
-    public List<Object[]> avgRatingByCourse() {
-        return getSession().createQuery(
-                "SELECT r.courseId.title, AVG(r.rating) FROM CourseRating r GROUP BY r.courseId.title",
-                Object[].class).getResultList();
+        return s.createQuery(q).getResultList();
     }
 
     @Override
-    public List<Object[]> ratingDistributionByCourse(Long courseId) {
-        return getSession().createQuery(
-                "SELECT r.rating, COUNT(r) FROM CourseRating r "
-                + "WHERE r.courseId.id = :cid GROUP BY r.rating",
-                Object[].class).setParameter("cid", courseId).getResultList();
+    public List<Object[]> statsRevenueByMonth(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+        Root<Payment> root = q.from(Payment.class);
+
+        Expression<Integer> monthExp = b.function("MONTH", Integer.class, root.get("createdAt"));
+        Expression<Integer> yearExp = b.function("YEAR", Integer.class, root.get("createdAt"));
+
+        q.multiselect(monthExp, b.sum(root.get("amount")));
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (filters != null) {
+            if (filters.containsKey("year")) {
+                predicates.add(b.equal(yearExp, Integer.parseInt(filters.get("year"))));
+            }
+            if (filters.containsKey("fromDate") && filters.containsKey("toDate")) {
+                Date from = parseDate(filters.get("fromDate"));
+                Date to = parseDate(filters.get("toDate"));
+                if (from != null && to != null) {
+                    predicates.add(b.between(root.get("createdAt"), from, to));
+                }
+            }
+            if (filters.containsKey("method")) {
+                predicates.add(b.equal(root.get("method"), filters.get("method")));
+            }
+        }
+
+        if (!predicates.isEmpty())
+            q.where(b.and(predicates.toArray(new Predicate[0])));
+
+        q.groupBy(monthExp);
+        q.orderBy(b.asc(monthExp));
+
+        return s.createQuery(q).getResultList();
     }
 
     @Override
-    public List<Object[]> topCoursesByRating(int limit) {
-        return getSession().createQuery(
-                "SELECT r.courseId.title, AVG(r.rating) FROM CourseRating r "
-                + "GROUP BY r.courseId.title ORDER BY AVG(r.rating) DESC",
-                Object[].class).setMaxResults(limit).getResultList();
-    }
+    public List<Object[]> statsTopInstructorsByRevenue(Map<String, String> filters, int limit) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+        Root<Payment> root = q.from(Payment.class);
 
-    // ===== Progress =====
-    @Override
-    public List<Object[]> completionRateByCourse() {
-        return getSession().createQuery(
-                "SELECT e.courseId.title, "
-                + "SUM(CASE WHEN p.completed = true THEN 1 ELSE 0 END)*1.0/COUNT(p) "
-                + "FROM Progress p JOIN p.enrollmentId e GROUP BY e.courseId.title",
-                Object[].class).getResultList();
-    }
+        Join<Payment, Enrollment> joinE = root.join("enrollmentId", JoinType.INNER);
+        Join<Enrollment, Course> joinC = joinE.join("courseId", JoinType.INNER);
+        Join<Course, User> joinU = joinC.join("instructorId", JoinType.INNER);
 
-    @Override
-    public List<Object[]> avgCompletionRateByCourse() {
-        return getSession().createQuery(
-                "SELECT e.courseId.title, AVG(p.lastPosition) FROM Progress p "
-                + "JOIN p.enrollmentId e GROUP BY e.courseId.title",
-                Object[].class).getResultList();
-    }
+        q.multiselect(joinU.get("fullName"), b.sum(root.get("amount")));
+        q.groupBy(joinU.get("fullName"));
+        q.orderBy(b.desc(b.sum(root.get("amount"))));
 
-    // ===== System Activity =====
-    @Override
-    public Long countNotifications() {
-        return getSession().createQuery("SELECT COUNT(n) FROM Notification n", Long.class)
-                .getSingleResult();
+        if (filters != null && filters.containsKey("year")) {
+            Expression<Integer> yearExp = b.function("YEAR", Integer.class, root.get("createdAt"));
+            q.where(b.equal(yearExp, Integer.parseInt(filters.get("year"))));
+        }
+
+        Query query = s.createQuery(q);
+        query.setMaxResults(limit);
+        return query.getResultList();
     }
 
     @Override
-    public Long countChatMessages() {
-        return getSession().createQuery("SELECT COUNT(m) FROM ChatMessage m", Long.class)
-                .getSingleResult();
+    public List<Object[]> statsTopCoursesByEnrollments(Map<String, String> filters, int limit) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+
+        Root<Enrollment> root = q.from(Enrollment.class);
+        Join<Enrollment, Course> joinC = root.join("courseId", JoinType.INNER);
+
+        q.multiselect(joinC.get("title"), b.count(root.get("id")));
+        q.groupBy(joinC.get("title"));
+        q.orderBy(b.desc(b.count(root.get("id"))));
+
+        if (filters != null && filters.containsKey("categoryId")) {
+            q.where(b.equal(joinC.get("categoryId").get("id"), Long.parseLong(filters.get("categoryId"))));
+        }
+
+        Query query = s.createQuery(q);
+        query.setMaxResults(limit);
+        return query.getResultList();
+    }
+
+    // ==== INSTRUCTOR ====
+
+    @Override
+    public List<Object[]> statsEnrollmentsByCourse(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+        Root<Enrollment> root = q.from(Enrollment.class);
+        Join<Enrollment, Course> joinC = root.join("courseId", JoinType.INNER);
+
+        q.multiselect(joinC.get("title"), b.count(root.get("id")));
+        q.groupBy(joinC.get("title"));
+
+        if (filters != null && filters.containsKey("instructorId")) {
+            q.where(b.equal(joinC.get("instructorId").get("id"),
+                    Long.parseLong(filters.get("instructorId"))));
+        }
+
+        return s.createQuery(q).getResultList();
     }
 
     @Override
-    public List<Object[]> countChatByCourse() {
-        return getSession().createQuery(
-                "SELECT ct.courseId.title, COUNT(m) FROM ChatMessage m JOIN m.threadId ct "
-                + "WHERE ct.courseId IS NOT NULL GROUP BY ct.courseId.title",
-                Object[].class).getResultList();
+    public List<Object[]> statsRevenueByCourse(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+
+        Root<Payment> root = q.from(Payment.class);
+        Join<Payment, Enrollment> joinE = root.join("enrollmentId", JoinType.INNER);
+        Join<Enrollment, Course> joinC = joinE.join("courseId", JoinType.INNER);
+
+        q.multiselect(joinC.get("title"), b.sum(root.get("amount")));
+        q.groupBy(joinC.get("title"));
+
+        if (filters != null && filters.containsKey("instructorId")) {
+            q.where(b.equal(joinC.get("instructorId").get("id"),
+                    Long.parseLong(filters.get("instructorId"))));
+        }
+
+        return s.createQuery(q).getResultList();
     }
 
     @Override
-    public List<Object[]> auditLogStats() {
-        return getSession().createQuery(
-                "SELECT a.userId.username, a.action, COUNT(a) "
-                + "FROM AuditLog a GROUP BY a.userId.username, a.action",
-                Object[].class).getResultList();
+    public List<Object[]> statsRevenueByMonthForInstructor(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+
+        Root<Payment> root = q.from(Payment.class);
+        Join<Payment, Enrollment> joinE = root.join("enrollmentId", JoinType.INNER);
+        Join<Enrollment, Course> joinC = joinE.join("courseId", JoinType.INNER);
+
+        Expression<Integer> monthExp = b.function("MONTH", Integer.class, root.get("createdAt"));
+        Expression<Integer> yearExp = b.function("YEAR", Integer.class, root.get("createdAt"));
+
+        q.multiselect(monthExp, b.sum(root.get("amount")));
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (filters != null) {
+            if (filters.containsKey("year")) {
+                predicates.add(b.equal(yearExp, Integer.parseInt(filters.get("year"))));
+            }
+            if (filters.containsKey("instructorId")) {
+                predicates.add(b.equal(joinC.get("instructorId").get("id"),
+                        Long.parseLong(filters.get("instructorId"))));
+            }
+        }
+
+        if (!predicates.isEmpty())
+            q.where(b.and(predicates.toArray(new Predicate[0])));
+
+        q.groupBy(monthExp);
+        q.orderBy(b.asc(monthExp));
+
+        return s.createQuery(q).getResultList();
     }
 
+    // ==== STUDENT ====
 
     @Override
-    public List<Object[]> countUsersByCourse() {
-        return getSession().createQuery(
-                "SELECT c.title, COUNT(DISTINCT e.studentId) "
-                + "FROM Enrollment e JOIN e.courseId c "
-                + "GROUP BY c.title",
-                Object[].class).getResultList();
+    public List<Object[]> statsCoursesByStudent(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+
+        Root<Enrollment> root = q.from(Enrollment.class);
+        Join<Enrollment, Course> joinC = root.join("courseId", JoinType.INNER);
+
+        q.multiselect(joinC.get("title"), root.get("enrolledAt"));
+
+        if (filters != null && filters.containsKey("studentId")) {
+            q.where(b.equal(root.get("studentId").get("id"),
+                    Long.parseLong(filters.get("studentId"))));
+        }
+
+        return s.createQuery(q).getResultList();
     }
 
     @Override
-    public List<Object[]> countCoursesByUser() {
-        return getSession().createQuery(
-                "SELECT u.username, COUNT(DISTINCT e.courseId) "
-                + "FROM Enrollment e JOIN e.studentId u "
-                + "GROUP BY u.username",
-                Object[].class).getResultList();
+    public List<Object[]> statsProgressByStudent(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+
+        Root<Progress> root = q.from(Progress.class);
+        Join<Progress, Course> joinC = root.join("courseId", JoinType.INNER);
+
+        q.multiselect(joinC.get("title"), root.get("progressPercent"));
+
+        if (filters != null && filters.containsKey("studentId")) {
+            q.where(b.equal(root.get("studentId").get("id"),
+                    Long.parseLong(filters.get("studentId"))));
+        }
+
+        return s.createQuery(q).getResultList();
     }
 
     @Override
-    public List<Object[]> countInstructorsByCategory() {
-        return getSession().createQuery(
-                "SELECT c.categoryId.name, COUNT(DISTINCT c.instructorId) "
-                + "FROM Course c "
-                + "GROUP BY c.categoryId.name",
-                Object[].class).getResultList();
+    public List<Object[]> statsPaymentsByStudent(Map<String, String> filters) {
+        Session s = getSession();
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
+
+        Root<Payment> root = q.from(Payment.class);
+        Join<Payment, Enrollment> joinE = root.join("enrollmentId", JoinType.INNER);
+
+        q.multiselect(root.get("method"), b.sum(root.get("amount")));
+        q.groupBy(root.get("method"));
+
+        if (filters != null && filters.containsKey("studentId")) {
+            q.where(b.equal(joinE.get("studentId").get("id"),
+                    Long.parseLong(filters.get("studentId"))));
+        }
+
+        return s.createQuery(q).getResultList();
     }
 }

@@ -1,75 +1,59 @@
 package com.pnam.controllers.admin;
 
 import com.pnam.services.StatsService;
+import java.time.Year;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.*;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/stats")
 public class AdminStatsController {
 
     @Autowired
     private StatsService statsService;
 
     @GetMapping
-    public String dashboard(Model model) {
+    public String dashboard(
+            @RequestParam(value = "filterType", required = false) String filterType,
+            @RequestParam Map<String, String> params,
+            Model model
+    ) {
+        int currentYear = Year.now().getValue();
         Map<String, Object> stats = new HashMap<>();
 
-        // --- Users ---
-        stats.put("usersByRole", statsService.countUsersByRole());
-        stats.put("pendingInstructors", statsService.countPendingInstructors());
-        stats.put("userRegistrationsByMonth", statsService.countUserRegistrationByMonth(2025));
-
-        // --- Courses ---
-        stats.put("coursesByStatus", statsService.countCoursesByStatus());
-        stats.put("coursesByCategory", statsService.countCoursesByCategory());
-        stats.put("coursesByMonth", statsService.countCoursesByMonth(2025));
-
-        // --- Enrollments ---
-        stats.put("enrollmentsByCourse", statsService.countEnrollmentsByCourse());
-        stats.put("enrollmentsByInstructor", statsService.countEnrollmentsByInstructor());
-        stats.put("enrollmentsByMonth", statsService.countEnrollmentsByMonth(2025));
-        stats.put("topCoursesByEnrollments", statsService.topCoursesByEnrollments(5));
-
-        // --- Payments ---
-        List<Object[]> revenueByMonth = statsService.revenueByMonth(2025);
-        List<String> revenueMonths = new ArrayList<>();
-        List<Long> revenueValues = new ArrayList<>();
-        for (Object[] row : revenueByMonth) {
-            revenueMonths.add(row[0].toString());   // Tháng
-            revenueValues.add(((Number) row[1]).longValue()); // Doanh thu
+        // ===== Users by Role =====
+        Map<String, String> userFilters = new HashMap<>();
+        if ("users".equals(filterType) && params.containsKey("status")) {
+            userFilters.put("status", params.get("status"));
+            model.addAttribute("status", params.get("status"));
         }
-        stats.put("revenueMonths", revenueMonths);
-        stats.put("revenueValues", revenueValues);
+        stats.put("usersByRole", statsService.statsUsersByRole(userFilters));
 
-        stats.put("revenueByCourse", statsService.revenueByCourse());
-        stats.put("revenueByInstructor", statsService.revenueByInstructor());
-        stats.put("paymentsByStatus", statsService.countPaymentsByStatus());
+        // ===== Revenue by Month =====
+        Map<String, String> revFilters = new HashMap<>();
+        String year = params.getOrDefault("year", String.valueOf(currentYear));
+        revFilters.put("year", year);
+        model.addAttribute("year", year);
+        if ("revenue".equals(filterType) && params.containsKey("method") && !params.get("method").isEmpty()) {
+            revFilters.put("method", params.get("method"));
+            model.addAttribute("method", params.get("method"));
+        }
+        stats.put("revenueByMonth", statsService.statsRevenueByMonth(revFilters));
 
-        // --- Ratings ---
-        stats.put("avgRatingByCourse", statsService.avgRatingByCourse());
-        stats.put("topCoursesByRating", statsService.topCoursesByRating(5));
+        // ===== Courses by Category =====
+        Map<String, String> catFilters = new HashMap<>();
+        if ("courses".equals(filterType) && params.containsKey("categoryId") && !params.get("categoryId").isEmpty()) {
+            catFilters.put("categoryId", params.get("categoryId"));
+            model.addAttribute("categoryId", params.get("categoryId"));
+        }
+        stats.put("coursesByCategory", statsService.statsCoursesByCategory(catFilters));
 
-        // --- Progress ---
-        stats.put("completionRateByCourse", statsService.completionRateByCourse());
-        stats.put("avgCompletionRateByCourse", statsService.avgCompletionRateByCourse());
-
-        // --- System activity ---
-        stats.put("notificationsCount", statsService.countNotifications());
-        stats.put("chatMessagesCount", statsService.countChatMessages());
-        stats.put("chatByCourse", statsService.countChatByCourse());
-        stats.put("auditLogStats", statsService.auditLogStats());
-
-        stats.put("usersByCourse", statsService.countUsersByCourse());
-        stats.put("coursesByUser", statsService.countCoursesByUser());
-        stats.put("instructorsByCategory", statsService.countInstructorsByCategory());
-
-        System.out.println("📊 Stats loaded: " + stats);
+        // ===== Top instructors & Top courses (không filter) =====
+        stats.put("topInstructors", statsService.statsTopInstructorsByRevenue(null, 5));
+        stats.put("topCourses", statsService.statsTopCoursesByEnrollments(null, 5));
 
         model.addAttribute("stats", stats);
         return "admin/stats";

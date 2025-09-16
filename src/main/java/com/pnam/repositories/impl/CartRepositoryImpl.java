@@ -2,51 +2,53 @@ package com.pnam.repositories.impl;
 
 import com.pnam.pojo.Cart;
 import com.pnam.repositories.CartRepository;
-import jakarta.persistence.TypedQuery;
+import com.pnam.repositories.base.BaseRepository;
 import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import java.util.List;
 
 @Repository
 @Transactional
-public class CartRepositoryImpl implements CartRepository {
-
-    @Autowired
-    private LocalSessionFactoryBean factory;
+public class CartRepositoryImpl extends BaseRepository<Cart, Long>
+        implements CartRepository {
 
     @Override
-    public Cart findById(Long id) {
-        return factory.getObject().getCurrentSession().find(Cart.class, id);
+    protected Class<Cart> getEntityClass() {
+        return Cart.class;
     }
 
     @Override
-    public List<Cart> findByStudent(Long studentId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<Cart> q = s.createQuery(
-            "SELECT c FROM Cart c WHERE c.studentId.id = :sid", Cart.class);
-        q.setParameter("sid", studentId);
-        return q.getResultList();
+    public Cart findById(Long id) {
+        return super.findById(id);
     }
 
     @Override
     public Cart save(Cart c) {
-        Session s = factory.getObject().getCurrentSession();
-        if (c.getId() == null) {
-            s.persist(c);
-            return c;
-        } else {
-            return s.merge(c);
-        }
+        return super.save(c, c.getId());
     }
 
     @Override
     public void delete(Long id) {
-        Session s = factory.getObject().getCurrentSession();
-        Cart c = s.find(Cart.class, id);
-        if (c != null) s.remove(c);
+        super.delete(id);
+    }
+
+    @Override
+    public List<Cart> findByStudent(Long studentId) {
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Cart> cq = cb.createQuery(Cart.class);
+        Root<Cart> root = cq.from(Cart.class);
+        cq.select(root);
+
+        cq.where(cb.equal(root.get("studentId").get("id"), studentId));
+
+        Query<Cart> query = s.createQuery(cq);
+        return query.getResultList();
     }
 }

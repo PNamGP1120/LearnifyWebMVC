@@ -2,12 +2,11 @@ package com.pnam.services.impl;
 
 import com.pnam.repositories.StatsRepository;
 import com.pnam.services.StatsService;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
 
 @Service
 @Transactional
@@ -16,140 +15,61 @@ public class StatsServiceImpl implements StatsService {
     @Autowired
     private StatsRepository statsRepo;
 
-    // ===== Users =====
+    // ==== ADMIN ====
     @Override
-    public Map<String, Long> countUsersByRole() {
-        return statsRepo.countUsersByRole();
+    public List<Object[]> statsUsersByRole(Map<String, String> filters) {
+        return statsRepo.statsUsersByRole(filters);
     }
 
     @Override
-    public Long countPendingInstructors() {
-        return statsRepo.countPendingInstructors();
+    public List<Object[]> statsCoursesByCategory(Map<String, String> filters) {
+        return statsRepo.statsCoursesByCategory(filters);
     }
 
     @Override
-    public List<Object[]> countUserRegistrationByMonth(int year) {
-        return statsRepo.countUserRegistrationByMonth(year);
-    }
-
-    // ===== Courses =====
-    @Override
-    public Map<String, Long> countCoursesByStatus() {
-        return statsRepo.countCoursesByStatus();
+    public List<Object[]> statsRevenueByMonth(Map<String, String> filters) {
+        return statsRepo.statsRevenueByMonth(filters);
     }
 
     @Override
-    public List<Object[]> countCoursesByCategory() {
-        return statsRepo.countCoursesByCategory();
+    public List<Object[]> statsTopInstructorsByRevenue(Map<String, String> filters, int limit) {
+        return statsRepo.statsTopInstructorsByRevenue(filters, limit);
     }
 
     @Override
-    public List<Object[]> countCoursesByMonth(int year) {
-        return statsRepo.countCoursesByMonth(year);
+    public List<Object[]> statsTopCoursesByEnrollments(Map<String, String> filters, int limit) {
+        return statsRepo.statsTopCoursesByEnrollments(filters, limit);
     }
 
-    // ===== Enrollments =====
+    // ==== INSTRUCTOR ====
     @Override
-    public List<Object[]> countEnrollmentsByCourse() {
-        return statsRepo.countEnrollmentsByCourse();
-    }
-
-    @Override
-    public List<Object[]> countEnrollmentsByInstructor() {
-        return statsRepo.countEnrollmentsByInstructor();
+    public List<Object[]> statsEnrollmentsByCourse(Map<String, String> filters) {
+        return statsRepo.statsEnrollmentsByCourse(filters);
     }
 
     @Override
-    public List<Object[]> countEnrollmentsByMonth(int year) {
-        return statsRepo.countEnrollmentsByMonth(year);
+    public List<Object[]> statsRevenueByCourse(Map<String, String> filters) {
+        return statsRepo.statsRevenueByCourse(filters);
     }
 
     @Override
-    public List<Object[]> topCoursesByEnrollments(int limit) {
-        return statsRepo.topCoursesByEnrollments(limit);
+    public List<Object[]> statsRevenueByMonthForInstructor(Map<String, String> filters) {
+        return statsRepo.statsRevenueByMonthForInstructor(filters);
     }
 
-    // ===== Payments =====
+    // ==== STUDENT ====
     @Override
-    public List<Object[]> revenueByCourse() {
-        return statsRepo.revenueByCourse();
-    }
-
-    @Override
-    public List<Object[]> revenueByInstructor() {
-        return statsRepo.revenueByInstructor();
+    public List<Object[]> statsCoursesByStudent(Map<String, String> filters) {
+        return statsRepo.statsCoursesByStudent(filters);
     }
 
     @Override
-    public List<Object[]> revenueByMonth(int year) {
-        return statsRepo.revenueByMonth(year);
+    public List<Object[]> statsProgressByStudent(Map<String, String> filters) {
+        return statsRepo.statsProgressByStudent(filters);
     }
 
     @Override
-    public Map<String, Long> countPaymentsByStatus() {
-        return statsRepo.countPaymentsByStatus();
-    }
-
-    // ===== Ratings =====
-    @Override
-    public List<Object[]> avgRatingByCourse() {
-        return statsRepo.avgRatingByCourse();
-    }
-
-    @Override
-    public List<Object[]> ratingDistributionByCourse(Long courseId) {
-        return statsRepo.ratingDistributionByCourse(courseId);
-    }
-
-    @Override
-    public List<Object[]> topCoursesByRating(int limit) {
-        return statsRepo.topCoursesByRating(limit);
-    }
-
-    // ===== Progress =====
-    @Override
-    public List<Object[]> completionRateByCourse() {
-        return statsRepo.completionRateByCourse();
-    }
-
-    @Override
-    public List<Object[]> avgCompletionRateByCourse() {
-        return statsRepo.avgCompletionRateByCourse();
-    }
-
-    // ===== System activity =====
-    @Override
-    public Long countNotifications() {
-        return statsRepo.countNotifications();
-    }
-
-    @Override
-    public Long countChatMessages() {
-        return statsRepo.countChatMessages();
-    }
-
-    @Override
-    public List<Object[]> countChatByCourse() {
-        return statsRepo.countChatByCourse();
-    }
-
-    @Override
-    public List<Object[]> auditLogStats() {
-        return statsRepo.auditLogStats();
-    }
-
-    @Override
-    public List<Object[]> countUsersByCourse() {
-        return statsRepo.countUsersByCourse();
-    }
-
-    @Override
-    public List<Object[]> countCoursesByUser() {
-        return statsRepo.countCoursesByUser();
-    }
-
-    @Override
-    public List<Object[]> countInstructorsByCategory() {
-        return statsRepo.countInstructorsByCategory();
+    public List<Object[]> statsPaymentsByStudent(Map<String, String> filters) {
+        return statsRepo.statsPaymentsByStudent(filters);
     }
 }

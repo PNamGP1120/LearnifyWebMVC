@@ -2,71 +2,78 @@ package com.pnam.repositories.impl;
 
 import com.pnam.pojo.CourseSection;
 import com.pnam.repositories.CourseSectionRepository;
+import com.pnam.repositories.base.BaseRepository;
 import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Repository
 @Transactional
-public class CourseSectionRepositoryImpl implements CourseSectionRepository {
+public class CourseSectionRepositoryImpl extends BaseRepository<CourseSection, Long>
+        implements CourseSectionRepository {
 
-    private static final int PAGE_SIZE = 10;
+    @Override
+    protected Class<CourseSection> getEntityClass() {
+        return CourseSection.class;
+    }
 
-    @Autowired
-    private LocalSessionFactoryBean factory;
+    @Override
+    public CourseSection findById(Long id) {
+        return super.findById(id);
+    }
 
-    private Session getSession() {
-        return this.factory.getObject().getCurrentSession();
+    @Override
+    public void save(CourseSection section) {
+        super.save(section, section.getId());
+    }
+
+    @Override
+    public void delete(Long id) {
+        super.delete(id);
     }
 
     @Override
     public List<CourseSection> getSections(Map<String, String> params) {
         Session s = getSession();
-        CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<CourseSection> q = b.createQuery(CourseSection.class);
-        Root<CourseSection> root = q.from(CourseSection.class);
-        q.select(root);
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<CourseSection> cq = cb.createQuery(CourseSection.class);
+        Root<CourseSection> root = cq.from(CourseSection.class);
+        cq.select(root);
 
+        List<Predicate> predicates = new ArrayList<>();
         if (params != null) {
-            List<Predicate> predicates = new ArrayList<>();
-
-            // lọc theo keyword
             String kw = params.get("kw");
-            if (kw != null && !kw.isEmpty()) {
-                predicates.add(b.like(root.get("title"), "%" + kw + "%"));
+            if (kw != null && !kw.isBlank()) {
+                predicates.add(cb.like(root.get("title"), "%" + kw + "%"));
             }
 
-            // lọc theo courseId
             String courseId = params.get("courseId");
-            if (courseId != null && !courseId.isEmpty()) {
-                predicates.add(b.equal(root.get("courseId").get("id"), Long.parseLong(courseId)));
+            if (courseId != null && !courseId.isBlank()) {
+                predicates.add(cb.equal(root.get("courseId").get("id"), Long.parseLong(courseId)));
             }
-
-            q.where(predicates.toArray(Predicate[]::new));
-            q.orderBy(b.asc(root.get("orderIndex"))); // sắp xếp theo thứ tự section
         }
 
-        Query query = s.createQuery(q);
-
-        // phân trang
-        if (params != null && params.containsKey("page")) {
-            int page = Integer.parseInt(params.get("page"));
-            int start = (page - 1) * PAGE_SIZE;
-            query.setFirstResult(start);
-            query.setMaxResults(PAGE_SIZE);
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
         }
+
+        cq.orderBy(cb.asc(root.get("orderIndex")));
+
+        Query<CourseSection> query = s.createQuery(cq);
+
+        int page = getPage(params);
+        int pageSize = getPageSize(params);
+        query.setFirstResult((page - 1) * pageSize);
+        query.setMaxResults(pageSize);
 
         return query.getResultList();
     }
@@ -74,51 +81,28 @@ public class CourseSectionRepositoryImpl implements CourseSectionRepository {
     @Override
     public long countSections(Map<String, String> params) {
         Session s = getSession();
-        CriteriaBuilder b = s.getCriteriaBuilder();
-        CriteriaQuery<Long> q = b.createQuery(Long.class);
-        Root<CourseSection> root = q.from(CourseSection.class);
-        q.select(b.count(root));
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<CourseSection> root = cq.from(CourseSection.class);
+        cq.select(cb.count(root));
 
+        List<Predicate> predicates = new ArrayList<>();
         if (params != null) {
-            List<Predicate> predicates = new ArrayList<>();
-
             String kw = params.get("kw");
-            if (kw != null && !kw.isEmpty()) {
-                predicates.add(b.like(root.get("title"), "%" + kw + "%"));
+            if (kw != null && !kw.isBlank()) {
+                predicates.add(cb.like(root.get("title"), "%" + kw + "%"));
             }
 
             String courseId = params.get("courseId");
-            if (courseId != null && !courseId.isEmpty()) {
-                predicates.add(b.equal(root.get("courseId").get("id"), Long.parseLong(courseId)));
+            if (courseId != null && !courseId.isBlank()) {
+                predicates.add(cb.equal(root.get("courseId").get("id"), Long.parseLong(courseId)));
             }
-
-            q.where(predicates.toArray(Predicate[]::new));
         }
 
-        return s.createQuery(q).getSingleResult();
-    }
-
-    @Override
-    public CourseSection findById(Long id) {
-        return getSession().get(CourseSection.class, id);
-    }
-
-    @Override
-    public void save(CourseSection section) {
-        Session s = getSession();
-        if (section.getId() == null) {
-            s.persist(section);
-        } else {
-            s.merge(section);
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(new Predicate[0]));
         }
-    }
 
-    @Override
-    public void delete(Long id) {
-        Session s = getSession();
-        CourseSection section = findById(id);
-        if (section != null) {
-            s.remove(section);
-        }
+        return s.createQuery(cq).getSingleResult();
     }
 }

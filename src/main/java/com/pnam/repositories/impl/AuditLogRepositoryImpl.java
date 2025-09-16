@@ -1,69 +1,68 @@
- /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.pnam.repositories.impl;
 
 import com.pnam.pojo.AuditLog;
 import com.pnam.repositories.AuditLogRepository;
-import jakarta.persistence.TypedQuery;
-import java.util.List;
+import com.pnam.repositories.base.BaseRepository;
 import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- *
- * @author pnam
- */
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
+import java.util.List;
+
 @Repository
 @Transactional
-public class AuditLogRepositoryImpl implements AuditLogRepository {
-    @Autowired
-    private LocalSessionFactoryBean factory;
+public class AuditLogRepositoryImpl extends BaseRepository<AuditLog, Long>
+        implements AuditLogRepository {
 
     @Override
-    public AuditLog findById(Long id) {
-        return factory.getObject().getCurrentSession().find(AuditLog.class, id);
+    protected Class<AuditLog> getEntityClass() {
+        return AuditLog.class;
     }
 
     @Override
-    public List<AuditLog> findByUser(Long userId) {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<AuditLog> q = s.createQuery(
-            "SELECT a FROM AuditLog a WHERE a.userId.id = :uid ORDER BY a.createdAt DESC",
-            AuditLog.class);
-        q.setParameter("uid", userId);
-        return q.getResultList();
+    public AuditLog findById(Long id) {
+        return super.findById(id);
     }
 
     @Override
     public AuditLog save(AuditLog log) {
-        Session s = factory.getObject().getCurrentSession();
-        if (log.getId() == null) {
-            s.persist(log);
-            return log;
-        } else {
-            return s.merge(log);
-        }
+        return super.save(log, log.getId());
     }
 
     @Override
     public void delete(Long id) {
-        Session s = factory.getObject().getCurrentSession();
-        AuditLog log = s.find(AuditLog.class, id);
-        if (log != null) s.remove(log);
+        super.delete(id);
     }
-    
+
+    @Override
+    public List<AuditLog> findByUser(Long userId) {
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<AuditLog> cq = cb.createQuery(AuditLog.class);
+        Root<AuditLog> root = cq.from(AuditLog.class);
+        cq.select(root);
+
+        cq.where(cb.equal(root.get("userId").get("id"), userId));
+        cq.orderBy(cb.desc(root.get("createdAt")));
+
+        Query<AuditLog> query = s.createQuery(cq);
+        return query.getResultList();
+    }
+
     @Override
     public List<AuditLog> findAll() {
-        Session s = factory.getObject().getCurrentSession();
-        TypedQuery<AuditLog> q = s.createQuery(
-            "FROM AuditLog a ORDER BY a.createdAt DESC",
-            AuditLog.class
-        );
-        return q.getResultList();
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<AuditLog> cq = cb.createQuery(AuditLog.class);
+        Root<AuditLog> root = cq.from(AuditLog.class);
+        cq.select(root);
+        cq.orderBy(cb.desc(root.get("createdAt")));
+
+        Query<AuditLog> query = s.createQuery(cq);
+        return query.getResultList();
     }
 }
