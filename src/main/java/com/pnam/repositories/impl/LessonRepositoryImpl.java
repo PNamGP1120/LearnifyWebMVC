@@ -29,32 +29,36 @@ public class LessonRepositoryImpl extends BaseRepository<Lesson, Long>
     @Override
     public List<Lesson> getLessons(Map<String, String> params) {
         Session s = getSession();
-        CriteriaBuilder cb = s.getCriteriaBuilder();
-        CriteriaQuery<Lesson> cq = cb.createQuery(Lesson.class);
-        Root<Lesson> root = cq.from(Lesson.class);
-        cq.select(root);
+        CriteriaBuilder b = s.getCriteriaBuilder();
+        CriteriaQuery<Lesson> q = b.createQuery(Lesson.class);
+        Root<Lesson> root = q.from(Lesson.class);
 
         List<Predicate> predicates = new ArrayList<>();
+
         if (params != null) {
-            String kw = params.get("kw");
-            if (kw != null && !kw.isBlank()) {
-                predicates.add(cb.or(
-                        cb.like(root.get("title"), "%" + kw + "%"),
-                        cb.like(root.get("contentUrl"), "%" + kw + "%")
-                ));
+            if (params.containsKey("sectionId")) {
+                predicates.add(
+                        b.equal(root.get("sectionId").get("id"), Long.parseLong(params.get("sectionId")))
+                );
+            }
+            if (params.containsKey("kw")) {
+                predicates.add(
+                        b.like(root.get("title"), "%" + params.get("kw") + "%")
+                );
             }
         }
 
-        if (!predicates.isEmpty()) {
-            cq.where(predicates.toArray(new Predicate[0]));
+        q.select(root).where(predicates.toArray(new Predicate[0]));
+        q.orderBy(b.asc(root.get("orderIndex")));
+
+        Query query = s.createQuery(q);
+
+        if (params != null && params.containsKey("page") && params.containsKey("pageSize")) {
+            int page = Integer.parseInt(params.get("page"));
+            int pageSize = Integer.parseInt(params.get("pageSize"));
+            query.setFirstResult((page - 1) * pageSize);
+            query.setMaxResults(pageSize);
         }
-
-        Query<Lesson> query = s.createQuery(cq);
-
-        int page = getPage(params);
-        int pageSize = getPageSize(params);
-        query.setFirstResult((page - 1) * pageSize);
-        query.setMaxResults(pageSize);
 
         return query.getResultList();
     }

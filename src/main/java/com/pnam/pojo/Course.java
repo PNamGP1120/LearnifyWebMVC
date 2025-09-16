@@ -20,6 +20,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +32,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Set;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -82,6 +84,8 @@ public class Course implements Serializable {
     @Size(max = 255, message = "{course.coverImage.size}")
     @Column(name = "cover_image")
     private String coverImage;
+    @Transient
+    private MultipartFile coverFile;
 
     // ===== INTRO VIDEO URL =====
     @Size(max = 255, message = "{course.introVideoUrl.size}")
@@ -358,6 +362,20 @@ public class Course implements Serializable {
     @Override
     public String toString() {
         return "com.pnam.pojo.Course[ id=" + id + " ]";
+    }
+
+    /**
+     * @return the coverFile
+     */
+    public MultipartFile getCoverFile() {
+        return coverFile;
+    }
+
+    /**
+     * @param coverFile the coverFile to set
+     */
+    public void setCoverFile(MultipartFile coverFile) {
+        this.coverFile = coverFile;
     }
 
 }

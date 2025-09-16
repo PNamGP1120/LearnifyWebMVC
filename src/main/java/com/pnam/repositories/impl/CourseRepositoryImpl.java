@@ -28,17 +28,17 @@ public class CourseRepositoryImpl extends BaseRepository<Course, Long>
     }
 
     @Override
-    public Course findById(Long id) {
+    public Course getCourseById(Long id) {
         return super.findById(id);
     }
 
     @Override
-    public void save(Course course) {
+    public void saveCourse(Course course) {
         super.save(course, course.getId());
     }
 
     @Override
-    public void delete(Long id) {
+    public void deleteCourse(Long id) {
         super.delete(id);
     }
 
