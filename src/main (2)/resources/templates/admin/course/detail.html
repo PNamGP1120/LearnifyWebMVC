@@ -1,0 +1,53 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{base :: head-resources}"></head>
+    <body>
+        <div th:replace="~{base :: layout(~{::content})}">
+            <div th:fragment="content">
+
+                <h2 class="my-4">📄 Chi tiết Khoá học</h2>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 th:text="${course.title}"></h4>
+                        <p><strong>Mô tả:</strong> <span th:text="${course.description}"></span></p>
+                        <p><strong>Giá:</strong> <span th:text="${course.price}"></span></p>
+                        <p><strong>Trạng thái:</strong> <span th:text="${course.status}"></span></p>
+                        <p><strong>Danh mục:</strong> <span th:text="${course.categoryId != null ? course.categoryId.name : '---'}"></span></p>
+                        <p><strong>Giảng viên:</strong> <span th:text="${course.instructorId != null ? course.instructorId.fullName : '---'}"></span></p>
+                    </div>
+                </div>
+
+                <h3>📑 Danh sách Sections</h3>
+                <a th:href="@{/admin/courses/sections/add}" class="btn btn-success mb-3">➕ Thêm Section</a>
+
+                <table class="table table-striped shadow">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tiêu đề</th>
+                            <th>Thứ tự</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="s : ${sections}">
+                            <td th:text="${s.id}"></td>
+                            <td th:text="${s.title}"></td>
+                            <td th:text="${s.orderIndex}"></td>
+                            <td>
+                                <a th:href="@{/admin/courses/sections/{id}(id=${s.id})}" class="btn btn-sm btn-primary">Xem</a>
+                                <a th:href="@{/admin/courses/sections/{id}/edit(id=${s.id})}" class="btn btn-sm btn-warning">Sửa</a>
+                                <a th:href="@{/admin/courses/sections/{id}/delete(id=${s.id})}" class="btn btn-sm btn-danger"
+                                   onclick="return confirm('Xoá section này?')">Xoá</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <a th:href="@{/admin/courses}" class="btn btn-secondary">⬅ Quay lại</a>
+
+            </div>
+        </div>
+    </body>
+</html>

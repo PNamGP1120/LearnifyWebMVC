@@ -1,0 +1,133 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{base :: head-resources}"></head>
+    <body>
+        <div th:replace="~{base :: layout(~{::content})}">
+            <div th:fragment="content">
+
+                <h3 class="my-4" th:text="${lesson.id != null ? '✏ Sửa Lesson' : '➕ Thêm Lesson'}"></h3>
+
+                <!-- Form thêm Lesson -->
+                <form th:if="${lesson.id == null}"
+                      th:action="@{'/admin/courses/sections/' + ${sectionId} + '/lessons/add'}"
+                      th:object="${lesson}" method="post" class="row g-3 needs-validation" novalidate>
+
+                    <!-- Tiêu đề -->
+                    <div class="col-md-6">
+                        <label class="form-label">Tiêu đề *</label>
+                        <input type="text" th:field="*{title}" class="form-control" required/>
+                        <div class="text-danger" th:errors="*{title}"></div>
+                    </div>
+
+                    <!-- Loại nội dung -->
+                    <div class="col-md-3">
+                        <label class="form-label">Loại nội dung *</label>
+                        <select th:field="*{contentType}" class="form-select" required>
+                            <option value="">-- Chọn loại --</option>
+                            <option value="mp4">Video (mp4)</option>
+                            <option value="pdf">Tài liệu (pdf)</option>
+                            <option value="txt">Text</option>
+                        </select>
+                        <div class="text-danger" th:errors="*{contentType}"></div>
+                    </div>
+
+                    <!-- Đường dẫn nội dung -->
+                    <div class="col-md-9">
+                        <label class="form-label">Đường dẫn nội dung *</label>
+                        <input type="text" th:field="*{contentUrl}" class="form-control" placeholder="http://..." required/>
+                        <div class="text-danger" th:errors="*{contentUrl}"></div>
+                    </div>
+
+                    <!-- Thời lượng -->
+                    <div class="col-md-3">
+                        <label class="form-label">Thời lượng (phút) *</label>
+                        <input type="number" th:field="*{durationMin}" class="form-control" min="1" required/>
+                        <div class="text-danger" th:errors="*{durationMin}"></div>
+                    </div>
+
+                    <!-- Thứ tự -->
+                    <div class="col-md-3">
+                        <label class="form-label">Thứ tự *</label>
+                        <input type="number" th:field="*{orderIndex}" class="form-control" min="1" required/>
+                        <div class="text-danger" th:errors="*{orderIndex}"></div>
+                    </div>
+
+                    <!-- Previewable -->
+                    <div class="col-md-3 d-flex align-items-center">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" th:field="*{previewable}" id="previewable-add"/>
+                            <label class="form-check-label" for="previewable-add">Cho phép Preview</label>
+                        </div>
+                    </div>
+
+                    <!-- Nút -->
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">💾 Thêm mới</button>
+                        <a th:href="@{'/admin/courses/sections/' + ${sectionId} + '/lessons'}" class="btn btn-secondary">⬅ Quay lại</a>
+                    </div>
+                </form>
+
+                <!-- Form sửa Lesson -->
+                <form th:if="${lesson.id != null}"
+                      th:action="@{'/admin/courses/sections/' + ${sectionId} + '/lessons/' + ${lesson.id} + '/edit'}"
+                      th:object="${lesson}" method="post" class="row g-3 needs-validation" novalidate>
+
+                    <!-- Tiêu đề -->
+                    <div class="col-md-6">
+                        <label class="form-label">Tiêu đề *</label>
+                        <input type="text" th:field="*{title}" class="form-control" required/>
+                        <div class="text-danger" th:errors="*{title}"></div>
+                    </div>
+
+                    <!-- Loại nội dung -->
+                    <div class="col-md-3">
+                        <label class="form-label">Loại nội dung *</label>
+                        <select th:field="*{contentType}" class="form-select" required>
+                            <option value="">-- Chọn loại --</option>
+                            <option value="mp4">Video (mp4)</option>
+                            <option value="pdf">Tài liệu (pdf)</option>
+                            <option value="txt">Text</option>
+                        </select>
+                        <div class="text-danger" th:errors="*{contentType}"></div>
+                    </div>
+
+                    <!-- Đường dẫn nội dung -->
+                    <div class="col-md-9">
+                        <label class="form-label">Đường dẫn nội dung *</label>
+                        <input type="text" th:field="*{contentUrl}" class="form-control" placeholder="http://..." required/>
+                        <div class="text-danger" th:errors="*{contentUrl}"></div>
+                    </div>
+
+                    <!-- Thời lượng -->
+                    <div class="col-md-3">
+                        <label class="form-label">Thời lượng (phút) *</label>
+                        <input type="number" th:field="*{durationMin}" class="form-control" min="1" required/>
+                        <div class="text-danger" th:errors="*{durationMin}"></div>
+                    </div>
+
+                    <!-- Thứ tự -->
+                    <div class="col-md-3">
+                        <label class="form-label">Thứ tự *</label>
+                        <input type="number" th:field="*{orderIndex}" class="form-control" min="1" required/>
+                        <div class="text-danger" th:errors="*{orderIndex}"></div>
+                    </div>
+
+                    <!-- Previewable -->
+                    <div class="col-md-3 d-flex align-items-center">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" th:field="*{previewable}" id="previewable-edit"/>
+                            <label class="form-check-label" for="previewable-edit">Cho phép Preview</label>
+                        </div>
+                    </div>
+
+                    <!-- Nút -->
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">💾 Cập nhật</button>
+                        <a th:href="@{'/admin/courses/sections/' + ${sectionId} + '/lessons'}" class="btn btn-secondary">⬅ Quay lại</a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,61 @@
+
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+<div th:fragment="content">
+
+    <!-- Thông tin Section -->
+    <h2 class="my-4">📑 Chi tiết Section</h2>
+
+    <div class="card mb-4 shadow">
+        <div class="card-body">
+            <h4 th:text="${section.title}"></h4>
+            <p><strong>Thứ tự:</strong> <span th:text="${section.orderIndex}"></span></p>
+            <p><strong>Khoá học:</strong>
+                <span th:text="${section.courseId != null ? section.courseId.title : '---'}"></span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Danh sách Lesson -->
+    <h3 class="my-3">🎬 Danh sách Bài học</h3>
+    <a th:href="@{/admin/courses/lessons/add}" class="btn btn-success mb-3">➕ Thêm Lesson</a>
+
+    <table class="table table-striped table-hover shadow">
+        <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Tiêu đề</th>
+            <th>URL</th>
+            <th>Loại</th>
+            <th>Thứ tự</th>
+            <th>Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="l : ${lessons}">
+            <td th:text="${l.id}"></td>
+            <td th:text="${l.title}"></td>
+            <td>
+                <a th:href="${l.contentUrl}" target="_blank" th:text="${l.contentUrl}"></a>
+            </td>
+            <td th:text="${l.contentType}"></td>
+            <td th:text="${l.orderIndex}"></td>
+            <td>
+                <a th:href="@{/admin/courses/lessons/{id}/edit(id=${l.id})}" class="btn btn-sm btn-warning">Sửa</a>
+                <a th:href="@{/admin/courses/lessons/{id}/delete(id=${l.id})}" class="btn btn-sm btn-danger"
+                   onclick="return confirm('Xoá bài học này?')">Xoá</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Quay lại -->
+    <a th:href="@{/admin/courses/{id}(id=${section.courseId.id})}" class="btn btn-secondary">⬅ Quay lại Khoá học</a>
+
+</div>
+</div>
+</body>
+</html>

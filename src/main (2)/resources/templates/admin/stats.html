@@ -1,0 +1,246 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{base :: head-resources}"></head>
+    <body>
+        <div th:replace="~{base :: layout(~{::content})}">
+            <div th:fragment="content">
+
+                <h2 class="my-4">📊 Thống kê hệ thống</h2>
+
+                <!-- ===== Người dùng theo vai trò ===== -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/admin/stats}" method="get" class="row g-2 mb-3">
+                            <input type="hidden" name="filterType" value="users"/>
+                            <div class="col-md-3">
+                                <select name="status" class="form-select">
+                                    <option value="">-- Trạng thái User --</option>
+                                    <option value="ACTIVE" th:selected="${status=='ACTIVE'}">Active</option>
+                                    <option value="LOCKED" th:selected="${status=='LOCKED'}">Locked</option>
+                                    <option value="PENDING" th:selected="${status=='PENDING'}">Pending</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary">Lọc</button>
+                            </div>
+                        </form>
+
+                        <h5 class="card-title">Người dùng theo vai trò</h5>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <table class="table table-sm table-bordered">
+                                    <thead><tr><th>Vai trò</th><th>Số lượng</th></tr></thead>
+                                    <tbody>
+                                        <tr th:each="u: ${stats.usersByRole}">
+                                            <td th:text="${u[0]}"></td>
+                                            <td th:text="${u[1]}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-7">
+                                <canvas id="usersChart" style="max-height:250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Doanh thu theo tháng ===== -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <form th:action="@{/admin/stats}" method="get" class="row g-2 mb-3">
+                            <input type="hidden" name="filterType" value="revenue"/>
+                            <div class="col-md-2">
+                                <input type="number" name="year" class="form-control" th:value="${year}" placeholder="Năm">
+                            </div>
+                            <div class="col-md-3">
+                                <select name="method" class="form-select">
+                                    <option value="">-- Thanh toán --</option>
+                                    <option value="PAYPAL" th:selected="${method=='PAYPAL'}">PayPal</option>
+                                    <option value="STRIPE" th:selected="${method=='STRIPE'}">Stripe</option>
+                                    <option value="MOMO" th:selected="${method=='MOMO'}">MoMo</option>
+                                    <option value="ZALOPAY" th:selected="${method=='ZALOPAY'}">ZaloPay</option>
+                                    <option value="CASH" th:selected="${method=='CASH'}">Tiền mặt</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary">Lọc</button>
+                            </div>
+                        </form>
+
+                        <h5 class="card-title">Doanh thu theo tháng</h5>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <table class="table table-sm table-bordered">
+                                    <thead><tr><th>Tháng</th><th>Doanh thu</th></tr></thead>
+                                    <tbody>
+                                        <tr th:each="r: ${stats.revenueByMonth}">
+                                            <td th:text="${r[0]}"></td>
+                                            <td th:text="${#numbers.formatDecimal(r[1],0,'COMMA',0,'POINT')} + ' đ'"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-7">
+                                <canvas id="revenueChart" style="max-height:250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Khoá học theo danh mục ===== -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+<!--                        <form th:action="@{/admin/stats}" method="get" class="row g-2 mb-3">
+                            <input type="hidden" name="filterType" value="courses"/>
+                            <div class="col-md-3">
+                                <input type="text" name="categoryId" class="form-control"
+                                       th:value="${categoryId}" placeholder="ID Danh mục">
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary">Lọc</button>
+                            </div>
+                        </form>-->
+
+                        <h5 class="card-title">Khoá học theo danh mục</h5>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <table class="table table-sm table-bordered">
+                                    <thead><tr><th>Danh mục</th><th>Số lượng</th></tr></thead>
+                                    <tbody>
+                                        <tr th:each="c: ${stats.coursesByCategory}">
+                                            <td th:text="${c[0]}"></td>
+                                            <td th:text="${c[1]}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-7">
+                                <canvas id="coursesChart" style="max-height:250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Top Giảng viên ===== -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Top Giảng viên doanh thu cao</h5>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <table class="table table-sm table-bordered">
+                                    <thead><tr><th>Giảng viên</th><th>Doanh thu</th></tr></thead>
+                                    <tbody>
+                                        <tr th:each="t: ${stats.topInstructors}">
+                                            <td th:text="${t[0]}"></td>
+                                            <td th:text="${#numbers.formatDecimal(t[1],0,'COMMA',0,'POINT')} + ' đ'"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-7">
+                                <canvas id="instructorsChart" style="max-height:250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Top Khoá học ===== -->
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Khoá học nhiều đăng ký</h5>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <table class="table table-sm table-bordered">
+                                    <thead><tr><th>Khoá học</th><th>Lượt đăng ký</th></tr></thead>
+                                    <tbody>
+                                        <tr th:each="c: ${stats.topCourses}">
+                                            <td th:text="${c[0]}"></td>
+                                            <td th:text="${c[1]}"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-7">
+                                <canvas id="coursesTopChart" style="max-height:250px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            // User roles
+            const users = [[${stats.usersByRole}
+            ]];
+            if (users) {
+                new Chart(document.getElementById('usersChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: users.map(u => u[0]),
+                        datasets: [{data: users.map(u => u[1])}]
+                    }
+                });
+            }
+
+            // Revenue
+            const revenue = [[${stats.revenueByMonth}
+            ]];
+            if (revenue) {
+                new Chart(document.getElementById('revenueChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: revenue.map(r => r[0]),
+                        datasets: [{label: 'Doanh thu', data: revenue.map(r => r[1])}]
+                    }
+                });
+            }
+
+            // Courses by category
+            const categories = [[${stats.coursesByCategory}
+            ]];
+            if (categories) {
+                new Chart(document.getElementById('coursesChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: categories.map(c => c[0]),
+                        datasets: [{data: categories.map(c => c[1])}]
+                    }
+                });
+            }
+
+            // Top instructors
+            const instructors = [[${stats.topInstructors}
+            ]];
+            if (instructors) {
+                new Chart(document.getElementById('instructorsChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: instructors.map(i => i[0]),
+                        datasets: [{label: 'Doanh thu', data: instructors.map(i => i[1])}]
+                    }
+                });
+            }
+
+            // Top courses
+            const topCourses = [[${stats.topCourses}
+            ]];
+            if (topCourses) {
+                new Chart(document.getElementById('coursesTopChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: topCourses.map(c => c[0]),
+                        datasets: [{label: 'Đăng ký', data: topCourses.map(c => c[1])}]
+                    }
+                });
+            }
+            /*]]>*/
+        </script>
+
+    </body>
+</html>

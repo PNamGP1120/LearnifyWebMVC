@@ -1,0 +1,41 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{base :: head-resources}"></head>
+    <body>
+        <div th:replace="~{base :: layout(~{::content})}">
+            <div th:fragment="content">
+
+                <h2 class="my-4">📢 Quản lý thông báo</h2>
+
+                <table class="table table-bordered table-striped shadow">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Người nhận</th>
+                            <th>Nội dung</th>
+                            <th>Ngày tạo</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="n : ${notifications}">
+                            <td th:text="${n.id}"></td>
+                            <td th:text="${n.userId != null ? n.userId.fullName : 'Hệ thống'}"></td>
+                            <td>
+                                <a th:href="@{/admin/notifications/{id}(id=${n.id})}"
+                                   th:text="${#strings.abbreviate(n.message, 40)}">Nội dung</a>
+                            </td>
+
+                            <td th:text="${#dates.format(n.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td>
+                                <a th:href="@{/admin/notifications/delete/{id}(id=${n.id})}"
+                                   class="btn btn-danger btn-sm">🗑 Xoá</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </body>
+</html>

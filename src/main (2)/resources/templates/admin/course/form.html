@@ -1,0 +1,103 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+<div th:fragment="content">
+
+    <h2 class="my-4" th:text="${course.id != null ? '✏ Sửa Khoá học' : '➕ Thêm Khoá học'}"></h2>
+
+    <form th:action="@{${course.id != null ? '/admin/courses/' + course.id + '/edit' : '/admin/courses/add'}}"
+          th:object="${course}" method="post" enctype="multipart/form-data" class="row g-3">
+
+        <!-- Tiêu đề -->
+        <div class="col-md-6">
+            <label class="form-label">Tiêu đề *</label>
+            <input type="text" th:field="*{title}" class="form-control"/>
+            <div class="text-danger" th:errors="*{title}"></div>
+        </div>
+
+        <!-- Slug -->
+        <div class="col-md-6">
+            <label class="form-label">Slug *</label>
+            <input type="text" th:field="*{slug}" class="form-control"/>
+            <div class="text-danger" th:errors="*{slug}"></div>
+        </div>
+
+        <!-- Mô tả -->
+        <div class="col-12">
+            <label class="form-label">Mô tả</label>
+            <textarea th:field="*{description}" rows="4" class="form-control"></textarea>
+            <div class="text-danger" th:errors="*{description}"></div>
+        </div>
+
+        <!-- Giá + Tiền tệ + Thời lượng -->
+        <div class="col-md-4">
+            <label class="form-label">Giá (VND)</label>
+            <input type="number" th:field="*{price}" class="form-control" min="0" step="1000"/>
+            <div class="text-danger" th:errors="*{price}"></div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Tiền tệ</label>
+            <input type="text" th:field="*{currency}" maxlength="3" class="form-control"/>
+            <div class="text-danger" th:errors="*{currency}"></div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Thời lượng (giờ)</label>
+            <input type="number" th:field="*{durationHours}" class="form-control" step="0.5" min="1"/>
+            <div class="text-danger" th:errors="*{durationHours}"></div>
+        </div>
+
+        <!-- Danh mục -->
+        <div class="col-md-4">
+            <label class="form-label">Danh mục *</label>
+            <select th:field="*{categoryId}" class="form-select">
+                <option value="">-- Chọn danh mục --</option>
+                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+            </select>
+            <div class="text-danger" th:errors="*{categoryId}"></div>
+        </div>
+
+        <!-- Giảng viên -->
+        <div class="col-md-6">
+            <label class="form-label">Giảng viên *</label>
+            <select th:field="*{instructorId}" class="form-select">
+                <option value="">-- Chọn giảng viên --</option>
+                <option th:each="i : ${instructors}" th:value="${i.user.id}" th:text="${i.user.fullName}"></option>
+            </select>
+            <div class="text-danger" th:errors="*{instructorId}"></div>
+        </div>
+
+        <!-- Trạng thái -->
+        <div class="col-md-6">
+            <label class="form-label">Trạng thái *</label>
+            <select th:field="*{status}" class="form-select">
+                <option value="DRAFT">Nháp</option>
+                <option value="PUBLISHED">Xuất bản</option>
+                <option value="ARCHIVED">Lưu trữ</option>
+            </select>
+            <div class="text-danger" th:errors="*{status}"></div>
+        </div>
+
+        <!-- Ảnh bìa -->
+        <div class="col-md-6">
+            <label class="form-label">Ảnh bìa</label>
+            <input type="file" th:field="*{coverFile}" class="form-control" accept="image/*"/>
+            <div class="text-danger" th:errors="*{coverFile}"></div>
+
+            <img th:if="*{coverImage}" th:src="*{coverImage}" class="img-thumbnail mt-2" style="max-height:150px;"/>
+        </div>
+
+        <!-- Nút -->
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">
+                💾 <span th:text="${course.id != null ? 'Cập nhật' : 'Thêm mới'}"></span>
+            </button>
+            <a th:href="@{/admin/courses}" class="btn btn-secondary">⬅ Quay lại</a>
+        </div>
+    </form>
+
+</div>
+</div>
+</body>
+</html>

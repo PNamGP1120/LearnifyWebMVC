@@ -1,0 +1,78 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+    <div th:fragment="content">
+
+        <h2 class="my-4" th:text="${enrollment.id != null ? '✏ Sửa Enrollment' : '➕ Thêm Enrollment'}"></h2>
+
+        <form th:action="@{/admin/enrollments/save}"
+              th:object="${enrollment}"
+              method="post"
+              class="row g-3 needs-validation"
+              novalidate>
+            <input type="hidden" th:field="*{id}"/>
+
+            <!-- Học viên -->
+            <div class="col-md-6">
+                <label class="form-label">Học viên *</label>
+                <select th:field="*{studentId}" class="form-select" required>
+                    <option value="">-- Chọn học viên --</option>
+                    <option th:each="s : ${students}"
+                            th:value="${s.id}"
+                            th:text="${s.fullName}"
+                            th:selected="${enrollment.studentId != null and enrollment.studentId.id == s.id}">
+                    </option>
+                </select>
+                <div class="text-danger" th:errors="*{studentId}"></div>
+            </div>
+
+            <!-- Khoá học -->
+            <div class="col-md-6">
+                <label class="form-label">Khoá học *</label>
+                <select th:field="*{courseId}" class="form-select" required>
+                    <option value="">-- Chọn khoá học --</option>
+                    <option th:each="c : ${courses}"
+                            th:value="${c.id}"
+                            th:text="${c.title}"
+                            th:selected="${enrollment.courseId != null and enrollment.courseId.id == c.id}">
+                    </option>
+                </select>
+                <div class="text-danger" th:errors="*{courseId}"></div>
+            </div>
+
+            <!-- Ngày ghi danh -->
+            <div class="col-md-6">
+                <label class="form-label">Ngày ghi danh *</label>
+                <input type="datetime-local"
+                       th:field="*{enrolledAt}"
+                       class="form-control"
+                       required/>
+                <div class="text-danger" th:errors="*{enrolledAt}"></div>
+            </div>
+
+            <!-- Trạng thái truy cập -->
+            <div class="col-md-6">
+                <label class="form-label">Trạng thái truy cập *</label>
+                <select th:field="*{accessStatus}" class="form-select" required>
+                    <option value="ACTIVE">Đang học</option>
+                    <option value="EXPIRED">Hết hạn</option>
+                    <option value="BLOCKED">Bị chặn</option>
+                </select>
+                <div class="text-danger" th:errors="*{accessStatus}"></div>
+            </div>
+
+            <!-- Nút -->
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    💾 <span th:text="${enrollment.id != null ? 'Cập nhật' : 'Thêm mới'}"></span>
+                </button>
+                <a th:href="@{/admin/enrollments}" class="btn btn-secondary">⬅ Quay lại</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+</body>
+</html>
