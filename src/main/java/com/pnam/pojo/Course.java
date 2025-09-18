@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -84,7 +85,10 @@ public class Course implements Serializable {
     @Size(max = 255, message = "{course.coverImage.size}")
     @Column(name = "cover_image")
     private String coverImage;
+
     @Transient
+    @JsonIgnore
+    @jakarta.xml.bind.annotation.XmlTransient
     private MultipartFile coverFile;
 
     // ===== INTRO VIDEO URL =====
@@ -114,13 +118,13 @@ public class Course implements Serializable {
     // ===== TIMESTAMP =====
     @NotNull(message = "{course.createdAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
-    private Date createdAt;
+    @Column(name = "created_at", nullable = false)
+    private Date createdAt = new Date();
 
     @NotNull(message = "{course.updatedAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at")
-    private Date updatedAt;
+    @Column(name = "updated_at", nullable = false)
+    private Date updatedAt = new Date();
 
     // ===== RELATIONSHIPS =====
     @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)
@@ -131,7 +135,7 @@ public class Course implements Serializable {
     @JsonIgnore
     private Set<CourseRating> courseRatingSet;
 
-    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Enrollment> enrollmentSet;
 
@@ -139,12 +143,14 @@ public class Course implements Serializable {
     @JsonIgnore
     private Set<CourseSection> courseSectionSet;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    @JsonIgnore
     private Category categoryId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "instructor_id", referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "instructor_id")
+    @JsonIgnore
     private User instructorId;
 
     @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)

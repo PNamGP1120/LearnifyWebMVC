@@ -1,5 +1,6 @@
 package com.pnam.pojo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -28,6 +29,7 @@ public class Enrollment implements Serializable {
 
     @NotNull(message = "{enrollment.enrolledAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     @Column(name = "enrolled_at", nullable = false)
     private Date enrolledAt;
 

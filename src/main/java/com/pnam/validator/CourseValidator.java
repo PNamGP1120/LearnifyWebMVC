@@ -9,6 +9,7 @@ import org.springframework.validation.Validator;
 
 @Component
 public class CourseValidator implements Validator {
+
     @Override
     public boolean supports(Class<?> clazz) {
         return Course.class.isAssignableFrom(clazz);
@@ -40,12 +41,12 @@ public class CourseValidator implements Validator {
             errors.rejectValue("status", "course.status.notBlank", "Trạng thái là bắt buộc");
         }
 
-        if (c.getCategoryId() == null) {
-            errors.rejectValue("categoryId", "course.category.notNull", "Danh mục là bắt buộc");
-        }
-
-        if (c.getInstructorId() == null) {
-            errors.rejectValue("instructorId", "course.instructor.notNull", "Giảng viên là bắt buộc");
-        }
+//        if (c.getCategoryId() == null || c.getCategoryId().getId() == null) {
+//            errors.rejectValue("categoryId", "course.category.notNull", "Danh mục là bắt buộc");
+//        }
+//
+//        if (c.getInstructorId() == null || c.getInstructorId().getId() == null) {
+//            errors.rejectValue("instructorId", "course.instructor.notNull", "Giảng viên là bắt buộc");
+//        }
     }
 }

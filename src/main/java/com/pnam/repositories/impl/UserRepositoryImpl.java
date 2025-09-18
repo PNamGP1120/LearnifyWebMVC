@@ -60,7 +60,7 @@ public class UserRepositoryImpl extends BaseRepository<User, Long>
 
     @Override
     public void addUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+//        user.setPassword(passwordEncoder.encode(user.getPassword()));
         getSession().persist(user);
     }
 

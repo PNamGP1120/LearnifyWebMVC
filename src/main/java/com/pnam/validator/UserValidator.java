@@ -22,7 +22,6 @@ public class UserValidator implements Validator {
     public void validate(Object target, Errors errors) {
         User u = (User) target;
 
-        // Nếu là user mới thì kiểm tra trùng username/email
         if (u.getId() == null) {
             if (userService.getUserByUsername(u.getUsername()) != null) {
                 errors.rejectValue("username", "user.username.exists", "Tên tài khoản đã tồn tại");

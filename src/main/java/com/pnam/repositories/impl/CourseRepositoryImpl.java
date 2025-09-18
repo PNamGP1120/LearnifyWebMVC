@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.sql.Date;
@@ -48,6 +49,8 @@ public class CourseRepositoryImpl extends BaseRepository<Course, Long>
         CriteriaBuilder cb = s.getCriteriaBuilder();
         CriteriaQuery<Course> cq = cb.createQuery(Course.class);
         Root<Course> root = cq.from(Course.class);
+        root.fetch("categoryId", JoinType.LEFT);  
+        root.fetch("instructorId", JoinType.LEFT);
         cq.select(root);
 
         List<Predicate> predicates = new ArrayList<>();
@@ -176,4 +179,20 @@ public class CourseRepositoryImpl extends BaseRepository<Course, Long>
 
         return s.createQuery(cq).getSingleResult();
     }
+
+    @Override
+    public Course findBySlug(String slug) {
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Course> cq = cb.createQuery(Course.class);
+        Root<Course> root = cq.from(Course.class);
+
+        cq.select(root).where(cb.equal(root.get("slug"), slug));
+
+        Query<Course> query = s.createQuery(cq);
+        List<Course> results = query.getResultList();
+
+        return results.isEmpty() ? null : results.get(0);
+    }
+
 }

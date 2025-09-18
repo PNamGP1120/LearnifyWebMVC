@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @Transactional
 public class CourseServiceImpl implements CourseService {
+
     @Autowired
     private CourseRepository repo;
 
@@ -58,5 +59,10 @@ public class CourseServiceImpl implements CourseService {
             throw new RuntimeException("Upload cover image failed", e);
         }
     }
-}
 
+    @Override
+    public Course findBySlug(String slug) {
+        return repo.findBySlug(slug);
+    }
+
+}

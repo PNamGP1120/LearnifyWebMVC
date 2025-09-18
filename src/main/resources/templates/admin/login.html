@@ -13,7 +13,7 @@
             <div th:if="${param.error}" class="alert alert-danger">Sai tài khoản hoặc mật khẩu</div>
             <div th:if="${param.logout}" class="alert alert-success">Đăng xuất thành công</div>
 
-            <form th:action="@{/doLogin}" method="post">
+            <form th:action="@{/login}" method="post">
                 <div class="mb-3">
                     <label>Tài khoản</label>
                     <input type="text" class="form-control" name="username" placeholder="Nhập username hoặc email">

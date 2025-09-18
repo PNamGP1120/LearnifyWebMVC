@@ -10,4 +10,5 @@ public interface CourseRepository {
     Course getCourseById(Long id);
     void saveCourse(Course course);
     void deleteCourse(Long id);
+    Course findBySlug(String slug);
 }

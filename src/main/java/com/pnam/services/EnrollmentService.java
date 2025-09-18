@@ -11,4 +11,5 @@ public interface EnrollmentService {
     void createEnrollment(Enrollment e);
     void updateEnrollment(Enrollment e);
     void deleteEnrollment(Long id);
+    Enrollment enrollCourse(Long studentId, Long courseId);
 }

@@ -18,4 +18,6 @@ public interface CourseService {
     void deleteCourse(Long id);
 
     String uploadCoverImage(MultipartFile file);
+
+    Course findBySlug(String slug);
 }
