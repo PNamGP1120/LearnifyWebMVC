@@ -21,22 +21,18 @@ public class InstructorProfile implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ===== USER_ID =====
     @Id
     @NotNull(message = "{instructorProfile.userId.notNull}")
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    // ===== BIO =====
     @Size(max = 65535, message = "{instructorProfile.bio.size}")
     @Lob
     private String bio;
 
-    // ===== CERTIFICATIONS =====
     @Size(max = 255, message = "{instructorProfile.certifications.size}")
     private String certifications;
 
-    // ===== VERIFIED =====
     @Column(name = "verified_by_admin", nullable = false)
     private boolean verifiedByAdmin;
 
@@ -44,13 +40,11 @@ public class InstructorProfile implements Serializable {
     @Column(name = "verified_at")
     private Date verifiedAt;
 
-    // ===== RELATIONSHIP =====
     @OneToOne(optional = false)
     @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private User user;
 
-    // ===== Constructors =====
     public InstructorProfile() {
     }
 
@@ -125,10 +119,7 @@ public class InstructorProfile implements Serializable {
             return false;
         }
         InstructorProfile other = (InstructorProfile) object;
-        if ((this.userId == null && other.userId != null) || (this.userId != null && !this.userId.equals(other.userId))) {
-            return false;
-        }
-        return true;
+        return !((this.userId == null && other.userId != null) || (this.userId != null && !this.userId.equals(other.userId)));
     }
 
     @Override

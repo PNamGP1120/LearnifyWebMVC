@@ -1,0 +1,25 @@
+
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{base :: head-resources}"></head>
+<body>
+<div th:replace="~{base :: layout(~{::content})}">
+<div th:fragment="content">
+    <h2>✏️ Chỉnh sửa Instructor</h2>
+    <form th:action="@{/admin/instructors/{id}/edit(id=${instructor.userId})}" th:object="${instructor}" method="post">
+        <div class="mb-3"><label>User ID</label><input th:field="*{userId}" class="form-control" readonly></div>
+        <div class="mb-3"><label>Bio</label><textarea th:field="*{bio}" class="form-control" rows="3"></textarea></div>
+        <div class="mb-3"><label>Certifications</label><input th:field="*{certifications}" class="form-control"></div>
+        <div class="mb-3"><label>Xác minh</label>
+            <select th:field="*{verifiedByAdmin}" class="form-select">
+                <option value="true">Đã xác minh</option>
+                <option value="false">Chưa xác minh</option>
+            </select>
+        </div>
+        <button class="btn btn-success">Cập nhật</button>
+        <a th:href="@{/admin/instructors}" class="btn btn-secondary">Hủy</a>
+    </form>
+</div>
+</div>
+</body>
+</html>

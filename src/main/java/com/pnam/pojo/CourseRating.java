@@ -21,30 +21,25 @@ public class CourseRating implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ===== ID =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ===== RATING =====
     @NotNull(message = "{courseRating.rating.notNull}")
     @Min(value = 1, message = "{courseRating.rating.min}")
     @Max(value = 5, message = "{courseRating.rating.max}")
     @Column(name = "rating", nullable = false)
     private short rating;
 
-    // ===== COMMENT =====
     @Size(max = 500, message = "{courseRating.comment.size}")
     @Column(name = "comment", length = 500)
     private String comment;
 
-    // ===== CREATED_AT =====
     @NotNull(message = "{courseRating.createdAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false)
     private Date createdAt;
 
-    // ===== RELATIONSHIPS =====
     @ManyToOne(optional = false)
     @JoinColumn(name = "course_id", referencedColumnName = "id")
     @JsonIgnore
@@ -55,7 +50,6 @@ public class CourseRating implements Serializable {
     @JsonIgnore
     private User studentId;
 
-    // ===== Constructors =====
     public CourseRating() {
     }
 
@@ -69,7 +63,6 @@ public class CourseRating implements Serializable {
         this.createdAt = createdAt;
     }
 
-    // ===== Getters & Setters =====
     public Long getId() {
         return id;
     }
@@ -118,7 +111,6 @@ public class CourseRating implements Serializable {
         this.studentId = studentId;
     }
 
-    // ===== equals & hashCode =====
     @Override
     public int hashCode() {
         return (id != null ? id.hashCode() : 0);
@@ -133,7 +125,6 @@ public class CourseRating implements Serializable {
         return id != null && id.equals(other.id);
     }
 
-    // ===== toString =====
     @Override
     public String toString() {
         return "com.pnam.pojo.CourseRating[ id=" + id + " ]";

@@ -19,7 +19,7 @@ public interface UserRepository {
     User getUserById(Long id);
 
     List<User> getAllUsers();
-    
+
     List<User> getUsers(Map<String, String> params);
 
 }

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -32,6 +33,12 @@ public class EnrollmentRepositoryImpl extends BaseRepository<Enrollment, Long>
         CriteriaBuilder cb = s.getCriteriaBuilder();
         CriteriaQuery<Enrollment> cq = cb.createQuery(Enrollment.class);
         Root<Enrollment> root = cq.from(Enrollment.class);
+        var courseFetch = root.fetch("courseId", JoinType.LEFT);
+        courseFetch.fetch("categoryId", JoinType.LEFT);
+        courseFetch.fetch("instructorId", JoinType.LEFT);
+
+        root.fetch("studentId", JoinType.LEFT);
+
         cq.select(root);
 
         List<Predicate> predicates = new ArrayList<>();

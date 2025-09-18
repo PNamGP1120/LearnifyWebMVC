@@ -14,8 +14,9 @@ public class UserFormatter implements Formatter<User> {
 
     @Override
     public User parse(String userId, Locale locale) throws ParseException {
-        if (userId == null || userId.isBlank())
+        if (userId == null || userId.isBlank()) {
             return null;
+        }
 
         User u = new User();
         u.setId(Long.valueOf(userId));

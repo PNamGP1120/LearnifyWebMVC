@@ -19,12 +19,10 @@ public class AdminStatsController {
     public String dashboard(
             @RequestParam(value = "filterType", required = false) String filterType,
             @RequestParam Map<String, String> params,
-            Model model
-    ) {
+            Model model) {
         int currentYear = Year.now().getValue();
         Map<String, Object> stats = new HashMap<>();
 
-        // ===== Users by Role =====
         Map<String, String> userFilters = new HashMap<>();
         if ("users".equals(filterType) && params.containsKey("status")) {
             userFilters.put("status", params.get("status"));
@@ -32,7 +30,6 @@ public class AdminStatsController {
         }
         stats.put("usersByRole", statsService.statsUsersByRole(userFilters));
 
-        // ===== Revenue by Month =====
         Map<String, String> revFilters = new HashMap<>();
         String year = params.getOrDefault("year", String.valueOf(currentYear));
         revFilters.put("year", year);
@@ -43,7 +40,6 @@ public class AdminStatsController {
         }
         stats.put("revenueByMonth", statsService.statsRevenueByMonth(revFilters));
 
-        // ===== Courses by Category =====
         Map<String, String> catFilters = new HashMap<>();
         if ("courses".equals(filterType) && params.containsKey("categoryId") && !params.get("categoryId").isEmpty()) {
             catFilters.put("categoryId", params.get("categoryId"));
@@ -51,7 +47,6 @@ public class AdminStatsController {
         }
         stats.put("coursesByCategory", statsService.statsCoursesByCategory(catFilters));
 
-        // ===== Top instructors & Top courses (không filter) =====
         stats.put("topInstructors", statsService.statsTopInstructorsByRevenue(null, 5));
         stats.put("topCourses", statsService.statsTopCoursesByEnrollments(null, 5));
 

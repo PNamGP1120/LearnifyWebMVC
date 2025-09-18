@@ -9,10 +9,6 @@ public class CourseRequestDTO {
     @Size(max = 200, message = "Tiêu đề tối đa 200 ký tự")
     private String title;
 
-//    @NotBlank(message = "Slug là bắt buộc")
-//    @Size(max = 220, message = "Slug tối đa 220 ký tự")
-//    private String slug;
-
     @Size(max = 65535, message = "Mô tả quá dài")
     private String description;
 
@@ -36,6 +32,7 @@ public class CourseRequestDTO {
     public String getTitle() {
         return title;
     }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -46,10 +43,10 @@ public class CourseRequestDTO {
 //    public void setSlug(String slug) {
 //        this.slug = slug;
 //    }
-
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -57,6 +54,7 @@ public class CourseRequestDTO {
     public BigDecimal getPrice() {
         return price;
     }
+
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
@@ -64,6 +62,7 @@ public class CourseRequestDTO {
     public String getStatus() {
         return status;
     }
+
     public void setStatus(String status) {
         this.status = status;
     }
@@ -71,6 +70,7 @@ public class CourseRequestDTO {
     public BigDecimal getDurationHours() {
         return durationHours;
     }
+
     public void setDurationHours(BigDecimal durationHours) {
         this.durationHours = durationHours;
     }
@@ -78,6 +78,7 @@ public class CourseRequestDTO {
     public String getCurrency() {
         return currency;
     }
+
     public void setCurrency(String currency) {
         this.currency = currency;
     }
@@ -85,6 +86,7 @@ public class CourseRequestDTO {
     public Long getCategoryId() {
         return categoryId;
     }
+
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }

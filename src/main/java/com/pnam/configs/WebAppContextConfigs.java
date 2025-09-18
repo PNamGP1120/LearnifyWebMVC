@@ -44,7 +44,6 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         registry.addFormatter(new UserFormatter());
     }
 
-    // Bean cho Bean Validation (Hibernate Validator)
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource source = new ResourceBundleMessageSource();
@@ -53,7 +52,6 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         return source;
     }
 
-    // Kết hợp Bean Validation với messages.properties
     @Bean
     public LocalValidatorFactoryBean getValidator() {
         LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
@@ -61,7 +59,6 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
         return bean;
     }
 
-    // Bean cho WebAppValidator (gộp Bean Validation + Spring Validator)
     @Bean
     public WebAppValidator webAppValidator(UserValidator userValidator) {
         Set<Validator> springValidators = new HashSet<>();
@@ -74,7 +71,7 @@ public class WebAppContextConfigs implements WebMvcConfigurer {
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        converters.clear(); // bỏ hết
-        converters.add(new MappingJackson2HttpMessageConverter()); // chỉ dùng JSON
+        converters.clear();
+        converters.add(new MappingJackson2HttpMessageConverter()); 
     }
 }

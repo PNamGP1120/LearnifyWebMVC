@@ -36,7 +36,6 @@ public class ApiCartItemController {
     @Autowired
     private CourseService courseService;
 
-    // ===== ADD ITEM TO CART =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @PostMapping
     public ResponseEntity<?> addItem(@RequestBody Map<String, Long> body, Principal principal) {
@@ -47,7 +46,6 @@ public class ApiCartItemController {
 
         User student = userService.getUserByUsername(principal.getName());
 
-        // Tìm cart ACTIVE
         List<Cart> carts = cartService.getCartsByStudent(student.getId());
         Cart cart = carts.stream()
                 .filter(c -> "ACTIVE".equals(c.getStatus()))
@@ -60,19 +58,16 @@ public class ApiCartItemController {
                     return cartService.createCart(newCart);
                 });
 
-        // Kiểm tra course tồn tại
         Course course = courseService.getCourseById(courseId);
         if (course == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Khoá học không tồn tại"));
         }
 
-        // Kiểm tra item đã có trong cart chưa
         CartItem existed = cartItemService.getCartItemByCartAndCourse(cart.getId(), courseId);
         if (existed != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Khoá học đã có trong giỏ hàng"));
         }
 
-        // Thêm item
         CartItem item = new CartItem();
         item.setCartId(cart);
         item.setCourseId(course);
@@ -82,7 +77,6 @@ public class ApiCartItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // ===== REMOVE ITEM =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> removeItem(@PathVariable("id") Long id, Principal principal) {

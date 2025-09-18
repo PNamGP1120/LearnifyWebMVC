@@ -16,7 +16,6 @@ import org.springframework.transaction.TransactionSystemException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ===== Bean Validation ở Controller (Annotation @Valid + @RequestBody) =====
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -29,7 +28,6 @@ public class GlobalExceptionHandler {
         ));
     }
 
-    // ===== Hibernate Validation khi persist entity =====
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -50,7 +48,6 @@ public class GlobalExceptionHandler {
         ));
     }
 
-    // ===== Lỗi DB: trùng username, email, unique key... =====
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrity(DataIntegrityViolationException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
@@ -58,8 +55,7 @@ public class GlobalExceptionHandler {
                 "details", "Dữ liệu đã tồn tại hoặc vi phạm ràng buộc CSDL"
         ));
     }
-
-    // ===== Fallback cho các exception khác =====
+    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneral(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(

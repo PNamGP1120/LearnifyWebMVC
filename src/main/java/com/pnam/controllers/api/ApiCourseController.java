@@ -33,7 +33,6 @@ public class ApiCourseController {
     @Autowired
     private UserService userService;
 
-    // ===== Utility: generate slug duy nhất =====
     private String generateUniqueSlug(String title) {
         String baseSlug = title.toLowerCase()
                 .replaceAll("[^a-z0-9\\s-]", "")
@@ -43,7 +42,6 @@ public class ApiCourseController {
         String slug = baseSlug;
         int counter = 1;
 
-        // chỉ check 1 field bằng query đơn giản
         while (courseService.findBySlug(slug) != null) {
             slug = baseSlug + "-" + counter;
             counter++;
@@ -51,14 +49,16 @@ public class ApiCourseController {
         return slug;
     }
 
-    // ===== LIST (Student + Instructor) =====
     @PreAuthorize("hasAnyAuthority('STUDENT','INSTRUCTOR')")
     @GetMapping
-    public ResponseEntity<List<Course>> list(@RequestParam(required = false) Map<String, String> params) {
+    public ResponseEntity<List<Course>> list(@RequestParam(required = false) Map<String, String> params, Principal principal) {
+        User user = userService.getUserByUsername(principal.getName());
+        if ("INSTRUCTOR".equals(user.getRole())) {
+            params.put("instructorId", user.getId().toString());
+        }
         return ResponseEntity.ok(courseService.getCourses(params));
     }
 
-    // ===== GET BY ID =====
     @PreAuthorize("hasAnyAuthority('STUDENT','INSTRUCTOR')")
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable("id") Long id) {
@@ -69,22 +69,18 @@ public class ApiCourseController {
         return ResponseEntity.ok(c);
     }
 
-    // ===== CREATE (Instructor) =====
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody CourseRequestDTO dto, Principal principal) {
         User instructor = userService.getUserByUsername(principal.getName());
 
-        // validate category
         Category cat = categoryService.findById(dto.getCategoryId());
         if (cat == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Danh mục không tồn tại"));
         }
 
-        // generate slug duy nhất từ title
         String slug = generateUniqueSlug(dto.getTitle());
 
-        // map dto -> entity
         Course c = new Course();
         c.setTitle(dto.getTitle());
         c.setSlug(slug);
@@ -102,7 +98,6 @@ public class ApiCourseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(c);
     }
 
-    // ===== UPDATE (Instructor) =====
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable("id") Long id,
@@ -118,7 +113,6 @@ public class ApiCourseController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Không có quyền sửa khóa học này"));
         }
 
-        // update fields
         dbCourse.setTitle(dto.getTitle());
         dbCourse.setDescription(dto.getDescription());
         dbCourse.setPrice(dto.getPrice());
@@ -138,7 +132,6 @@ public class ApiCourseController {
         return ResponseEntity.ok(dbCourse);
     }
 
-    // ===== DELETE (Instructor) =====
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id, Principal principal) {

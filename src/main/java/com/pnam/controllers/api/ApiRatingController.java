@@ -33,14 +33,12 @@ public class ApiRatingController {
     @Autowired
     private UserService userService;
 
-    // ===== GET RATINGS BY COURSE =====
     @PreAuthorize("hasAnyAuthority('STUDENT','INSTRUCTOR')")
     @GetMapping("/course/{courseId}")
     public ResponseEntity<List<CourseRating>> getRatingsByCourse(@PathVariable("courseId") Long courseId) {
         return ResponseEntity.ok(ratingService.getRatings(Map.of("courseId", courseId.toString())));
     }
 
-    // ===== CREATE RATING (STUDENT) =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody CourseRating r,
@@ -65,7 +63,6 @@ public class ApiRatingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(r);
     }
 
-    // ===== DELETE RATING =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id, Principal principal) {

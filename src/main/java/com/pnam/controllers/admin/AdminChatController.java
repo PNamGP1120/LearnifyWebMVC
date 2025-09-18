@@ -21,16 +21,13 @@ public class AdminChatController {
     @Autowired
     private ChatMessageService messageService;
 
-    // Danh sách tất cả các thread (toàn bộ hệ thống)
     @GetMapping
     public String listThreads(Model model) {
-        // TODO: nếu có getAll() thì dùng, tạm để trống
         List<ChatThread> threads = List.of();
         model.addAttribute("threads", threads);
         return "admin/chat/threads";
     }
 
-    // Chi tiết một thread
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
         ChatThread thread = threadService.getThreadById(id);
@@ -41,7 +38,6 @@ public class AdminChatController {
         return "admin/chat/detail";
     }
 
-    // Xoá thread (nếu admin muốn dọn dẹp)
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Long id) {
         threadService.deleteThread(id);

@@ -4,7 +4,6 @@
  */
 package com.pnam.configs;
 
-import com.pnam.filters.JwtFilter;
 import jakarta.servlet.Filter;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletRegistration;
@@ -29,9 +28,6 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-//        return new Class[]{
-//            WebAppContextConfigs.class
-//        };
         return null;
     }
 
@@ -43,8 +39,8 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
     @Override
     protected void customizeRegistration(ServletRegistration.Dynamic registration) {
         String location = "/tmp";
-        long maxFileSize = 5242880; // 5MB
-        long maxRequestSize = 20971520; // 20MB
+        long maxFileSize = 5242880; 
+        long maxRequestSize = 20971520; 
         int fileSizeThreshold = 0;
 
         registration.setMultipartConfig(new MultipartConfigElement(location, maxFileSize, maxRequestSize, fileSizeThreshold));
@@ -52,6 +48,6 @@ public class DispatcherServletInit extends AbstractAnnotationConfigDispatcherSer
 
     @Override
     protected Filter[] getServletFilters() {
-        return new Filter[0]; // Filter sẽ áp dụng cho mọi request
+        return new Filter[0]; 
     }
 }

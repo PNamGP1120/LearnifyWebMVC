@@ -14,8 +14,9 @@ public class CategoryFormatter implements Formatter<Category> {
 
     @Override
     public Category parse(String cateId, Locale locale) throws ParseException {
-        if (cateId == null || cateId.isBlank())
+        if (cateId == null || cateId.isBlank()) {
             return null;
+        }
 
         Category c = new Category();
         c.setId(Long.valueOf(cateId));

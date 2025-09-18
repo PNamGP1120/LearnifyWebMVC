@@ -40,4 +40,38 @@ public class ProgressServiceImpl implements ProgressService {
     public void deleteProgress(Long id) {
         progressRepo.delete(id);
     }
+
+    @Override
+    public long countLessons(Long enrollmentId) {
+        return progressRepo.countLessons(enrollmentId);
+    }
+
+    @Override
+    public long countCompletedLessons(Long enrollmentId) {
+        return progressRepo.countCompletedLessons(enrollmentId);
+    }
+
+    @Override
+    public int calculateProgressPercent(Long enrollmentId) {
+        long total = countLessons(enrollmentId);
+        if (total == 0) {
+            return 0;
+        }
+
+        long completed = countCompletedLessons(enrollmentId);
+        return (int) Math.round((completed * 100.0) / total);
+    }
+
+    @Override
+    public int calculateProgress(Long enrollmentId) {
+        List<Progress> progresses = progressRepo.findByEnrollment(enrollmentId);
+        if (progresses == null || progresses.isEmpty()) {
+            return 0;
+        }
+
+        int totalLessons = progresses.size();
+        long completedCount = progresses.stream().filter(Progress::getCompleted).count();
+
+        return (int) ((completedCount * 100) / totalLessons);
+    }
 }

@@ -49,7 +49,7 @@ public class CourseRepositoryImpl extends BaseRepository<Course, Long>
         CriteriaBuilder cb = s.getCriteriaBuilder();
         CriteriaQuery<Course> cq = cb.createQuery(Course.class);
         Root<Course> root = cq.from(Course.class);
-        root.fetch("categoryId", JoinType.LEFT);  
+        root.fetch("categoryId", JoinType.LEFT);
         root.fetch("instructorId", JoinType.LEFT);
         cq.select(root);
 
@@ -82,12 +82,12 @@ public class CourseRepositoryImpl extends BaseRepository<Course, Long>
 
             String minPrice = params.get("minPrice");
             if (minPrice != null && !minPrice.isBlank()) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), Double.parseDouble(minPrice)));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), Double.valueOf(minPrice)));
             }
 
             String maxPrice = params.get("maxPrice");
             if (maxPrice != null && !maxPrice.isBlank()) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("price"), Double.parseDouble(maxPrice)));
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), Double.valueOf(maxPrice)));
             }
 
             String fromDate = params.get("fromDate");
@@ -102,7 +102,7 @@ public class CourseRepositoryImpl extends BaseRepository<Course, Long>
         }
 
         if (!predicates.isEmpty()) {
-            cq.where(predicates.toArray(new Predicate[0]));
+            cq.where(predicates.toArray(Predicate[]::new));
         }
 
         cq.orderBy(cb.desc(root.get("createdAt")));
@@ -144,22 +144,22 @@ public class CourseRepositoryImpl extends BaseRepository<Course, Long>
 
             String cateId = params.get("categoryId");
             if (cateId != null && !cateId.isBlank()) {
-                predicates.add(cb.equal(root.get("categoryId").get("id"), Long.parseLong(cateId)));
+                predicates.add(cb.equal(root.get("categoryId").get("id"), Long.valueOf(cateId)));
             }
 
             String instructorId = params.get("instructorId");
             if (instructorId != null && !instructorId.isBlank()) {
-                predicates.add(cb.equal(root.get("instructorId").get("id"), Long.parseLong(instructorId)));
+                predicates.add(cb.equal(root.get("instructorId").get("id"), Long.valueOf(instructorId)));
             }
 
             String minPrice = params.get("minPrice");
             if (minPrice != null && !minPrice.isBlank()) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), Double.parseDouble(minPrice)));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), Double.valueOf(minPrice)));
             }
 
             String maxPrice = params.get("maxPrice");
             if (maxPrice != null && !maxPrice.isBlank()) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("price"), Double.parseDouble(maxPrice)));
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), Double.valueOf(maxPrice)));
             }
 
             String fromDate = params.get("fromDate");
@@ -174,7 +174,7 @@ public class CourseRepositoryImpl extends BaseRepository<Course, Long>
         }
 
         if (!predicates.isEmpty()) {
-            cq.where(predicates.toArray(new Predicate[0]));
+            cq.where(predicates.toArray(Predicate[]::new));
         }
 
         return s.createQuery(cq).getSingleResult();

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public class CategoryRequestDTO {
 
-    private Long id; // chỉ dùng khi update
+    private Long id;
 
     @NotBlank(message = "Tên danh mục không được để trống")
     @Size(max = 100, message = "Tên danh mục tối đa 100 ký tự")
@@ -14,9 +14,8 @@ public class CategoryRequestDTO {
     @Size(max = 150, message = "Slug tối đa 150 ký tự")
     private String slug;
 
-    private Long parentId; // danh mục cha (có thể null)
+    private Long parentId;
 
-    // ===== Getters & Setters =====
     public Long getId() {
         return id;
     }

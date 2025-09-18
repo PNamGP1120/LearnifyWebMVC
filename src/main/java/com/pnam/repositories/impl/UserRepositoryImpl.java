@@ -23,10 +23,9 @@ import java.util.Map;
 public class UserRepositoryImpl extends BaseRepository<User, Long>
         implements UserRepository {
 
-    private final BCryptPasswordEncoder passwordEncoder;
-
-    public UserRepositoryImpl(BCryptPasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
+//    private final BCryptPasswordEncoder passwordEncoder;
+    public UserRepositoryImpl() {
+//        this.passwordEncoder = passwordEncoder;
     }
 
     @Override

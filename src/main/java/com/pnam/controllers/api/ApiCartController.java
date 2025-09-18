@@ -36,7 +36,6 @@ public class ApiCartController {
     @Autowired
     private UserService userService;
 
-    // ===== ADD TO CART =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @PostMapping
     public ResponseEntity<?> addToCart(@RequestBody Map<String, Object> payload, Principal principal) {
@@ -45,7 +44,7 @@ public class ApiCartController {
         if (payload.get("courseId") == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Khoá học bắt buộc"));
         }
-        Long courseId = Long.parseLong(payload.get("courseId").toString());
+        Long courseId = Long.valueOf(payload.get("courseId").toString());
         Course course = courseService.getCourseById(courseId);
         if (course == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Khoá học không tồn tại"));
@@ -78,7 +77,6 @@ public class ApiCartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(item);
     }
 
-    // ===== VIEW CART =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @GetMapping
     public ResponseEntity<List<CartItem>> myCart(Principal principal) {
@@ -89,7 +87,6 @@ public class ApiCartController {
         return ResponseEntity.ok(cartItemService.getCartItemsByCart(carts.get(0).getId()));
     }
 
-    // ===== REMOVE ITEM =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> removeFromCart(@PathVariable("id") Long id, Principal principal) {

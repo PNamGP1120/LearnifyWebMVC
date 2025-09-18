@@ -19,18 +19,15 @@ public class CartItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ===== ID =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ===== ADDED_AT =====
     @NotNull(message = "{cartItem.addedAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "added_at", nullable = false)
     private Date addedAt;
 
-    // ===== RELATIONSHIPS =====
     @ManyToOne(optional = false)
     @JoinColumn(name = "cart_id", referencedColumnName = "id")
     @JsonIgnore
@@ -41,40 +38,64 @@ public class CartItem implements Serializable {
     @JsonIgnore
     private Course courseId;
 
-    // ===== Constructors =====
-    public CartItem() {}
-    public CartItem(Long id) { this.id = id; }
+    public CartItem() {
+    }
+
+    public CartItem(Long id) {
+        this.id = id;
+    }
+
     public CartItem(Long id, Date addedAt) {
         this.id = id;
         this.addedAt = addedAt;
     }
 
-    // ===== Getters & Setters =====
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Date getAddedAt() { return addedAt; }
-    public void setAddedAt(Date addedAt) { this.addedAt = addedAt; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Cart getCartId() { return cartId; }
-    public void setCartId(Cart cartId) { this.cartId = cartId; }
+    public Date getAddedAt() {
+        return addedAt;
+    }
 
-    public Course getCourseId() { return courseId; }
-    public void setCourseId(Course courseId) { this.courseId = courseId; }
+    public void setAddedAt(Date addedAt) {
+        this.addedAt = addedAt;
+    }
 
-    // ===== equals & hashCode =====
+    public Cart getCartId() {
+        return cartId;
+    }
+
+    public void setCartId(Cart cartId) {
+        this.cartId = cartId;
+    }
+
+    public Course getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(Course courseId) {
+        this.courseId = courseId;
+    }
+
     @Override
     public int hashCode() {
         return (id != null ? id.hashCode() : 0);
     }
+
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof CartItem)) return false;
+        if (!(obj instanceof CartItem)) {
+            return false;
+        }
         CartItem other = (CartItem) obj;
         return this.id != null && this.id.equals(other.id);
     }
 
-    // ===== toString =====
     @Override
     public String toString() {
         return "com.pnam.pojo.CartItem[ id=" + id + " ]";

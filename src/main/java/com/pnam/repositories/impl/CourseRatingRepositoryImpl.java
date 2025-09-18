@@ -46,12 +46,12 @@ public class CourseRatingRepositoryImpl extends BaseRepository<CourseRating, Lon
             // lọc theo courseId
             String courseId = params.get("courseId");
             if (courseId != null && !courseId.isBlank()) {
-                predicates.add(cb.equal(root.get("courseId").get("id"), Long.parseLong(courseId)));
+                predicates.add(cb.equal(root.get("courseId").get("id"), Long.valueOf(courseId)));
             }
         }
 
         if (!predicates.isEmpty()) {
-            cq.where(predicates.toArray(new Predicate[0]));
+            cq.where(predicates.toArray(Predicate[]::new));
         }
 
         cq.orderBy(cb.desc(root.get("createdAt")));
@@ -84,12 +84,12 @@ public class CourseRatingRepositoryImpl extends BaseRepository<CourseRating, Lon
 
             String courseId = params.get("courseId");
             if (courseId != null && !courseId.isBlank()) {
-                predicates.add(cb.equal(root.get("courseId").get("id"), Long.parseLong(courseId)));
+                predicates.add(cb.equal(root.get("courseId").get("id"), Long.valueOf(courseId)));
             }
         }
 
         if (!predicates.isEmpty()) {
-            cq.where(predicates.toArray(new Predicate[0]));
+            cq.where(predicates.toArray(Predicate[]::new));
         }
 
         return s.createQuery(cq).getSingleResult();

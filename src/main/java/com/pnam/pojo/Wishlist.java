@@ -22,10 +22,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- *
- * @author pnam
- */
+
 @Entity
 @Table(name = "wishlist")
 @XmlRootElement
@@ -111,10 +108,7 @@ public class Wishlist implements Serializable {
             return false;
         }
         Wishlist other = (Wishlist) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override

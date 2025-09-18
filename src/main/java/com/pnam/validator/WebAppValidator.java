@@ -27,7 +27,6 @@ public class WebAppValidator implements org.springframework.validation.Validator
 
     @Override
     public void validate(Object target, Errors errors) {
-        // Bean Validation (annotation @NotBlank, @Email, ...)
         Set<ConstraintViolation<Object>> violations = beanValidator.validate(target);
         for (ConstraintViolation<Object> v : violations) {
             errors.rejectValue(
@@ -37,7 +36,6 @@ public class WebAppValidator implements org.springframework.validation.Validator
             );
         }
 
-        // Custom Spring Validators (ví dụ UserValidator)
         for (org.springframework.validation.Validator v : springValidators) {
             v.validate(target, errors);
         }

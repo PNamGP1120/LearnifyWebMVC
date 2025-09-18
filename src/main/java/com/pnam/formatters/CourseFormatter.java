@@ -12,10 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.Formatter;
 import org.springframework.stereotype.Component;
 
-/**
- *
- * @author pnam
- */
 @Component
 public class CourseFormatter implements Formatter<Course> {
 

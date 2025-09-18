@@ -24,7 +24,6 @@ public class ApiStudentController {
     @Autowired
     private UserService userService;
 
-    // ===== GET MY PROFILE =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(Principal principal) {
@@ -32,7 +31,6 @@ public class ApiStudentController {
         return ResponseEntity.ok(student);
     }
 
-    // ===== UPDATE PROFILE =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @PutMapping("/profile")
     public ResponseEntity<?> updateStudentProfile(@Valid @RequestBody UserProfileUpdateDTO dto,
@@ -58,7 +56,6 @@ public class ApiStudentController {
         return ResponseEntity.ok(student);
     }
 
-    // ===== ADMIN: LIST ALL STUDENTS =====
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<List<User>> listStudents(@RequestParam(required = false) Map<String, String> params) {

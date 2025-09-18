@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.List;
 
@@ -51,5 +52,34 @@ public class ProgressRepositoryImpl extends BaseRepository<Progress, Long>
 
         Query<Progress> query = s.createQuery(cq);
         return query.getResultList();
+    }
+
+    @Override
+    public long countLessons(Long enrollmentId) {
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<Progress> root = cq.from(Progress.class);
+
+        Predicate byEnrollment = cb.equal(root.get("enrollmentId").get("id"), enrollmentId);
+
+        cq.select(cb.count(root)).where(byEnrollment);
+
+        return s.createQuery(cq).getSingleResult();
+    }
+
+    @Override
+    public long countCompletedLessons(Long enrollmentId) {
+        Session s = getSession();
+        CriteriaBuilder cb = s.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<Progress> root = cq.from(Progress.class);
+
+        Predicate byEnrollment = cb.equal(root.get("enrollmentId").get("id"), enrollmentId);
+        Predicate completed = cb.isTrue(root.get("completed"));
+
+        cq.select(cb.count(root)).where(cb.and(byEnrollment, completed));
+
+        return s.createQuery(cq).getSingleResult();
     }
 }

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 public class PaymentRequestDTO {
+
     @NotBlank
     private String method;
 
@@ -17,16 +18,35 @@ public class PaymentRequestDTO {
     @NotNull
     private Long enrollmentId;
 
-    // ===== Getters & Setters =====
-    public String getMethod() { return method; }
-    public void setMethod(String method) { this.method = method; }
+    public String getMethod() {
+        return method;
+    }
 
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public void setMethod(String method) {
+        this.method = method;
+    }
 
-    public String getCurrency() { return currency; }
-    public void setCurrency(String currency) { this.currency = currency; }
+    public BigDecimal getAmount() {
+        return amount;
+    }
 
-    public Long getEnrollmentId() { return enrollmentId; }
-    public void setEnrollmentId(Long enrollmentId) { this.enrollmentId = enrollmentId; }
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public Long getEnrollmentId() {
+        return enrollmentId;
+    }
+
+    public void setEnrollmentId(Long enrollmentId) {
+        this.enrollmentId = enrollmentId;
+    }
 }

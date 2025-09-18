@@ -14,14 +14,12 @@ public class AdminNotificationController {
     @Autowired
     private NotificationService notiService;
 
-    // Danh sách tất cả thông báo
     @GetMapping
     public String list(Model model) {
         model.addAttribute("notifications", notiService.getAllNotifications());
         return "admin/notifications/list";
     }
 
-    // Chi tiết 1 thông báo
     @GetMapping("/{id}")
     public String detail(@PathVariable("id") Long id, Model model) {
         Notification n = notiService.getNotificationById(id);
@@ -29,7 +27,6 @@ public class AdminNotificationController {
         return "admin/notifications/detail";
     }
 
-    // Xóa thông báo
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable("id") Long id) {
         notiService.deleteNotification(id);

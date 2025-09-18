@@ -39,7 +39,6 @@ public class JwtFilter implements Filter {
                 if (username != null) {
                     User u = userService.getUserByUsername(username);
                     if (u != null) {
-                        // Gán quyền
                         List<GrantedAuthority> authorities
                                 = List.of(new SimpleGrantedAuthority(u.getRole()));
 

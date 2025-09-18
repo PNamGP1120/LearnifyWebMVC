@@ -67,8 +67,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (course == null) {
             throw new IllegalArgumentException("Course không tồn tại");
         }
-
-        // Kiểm tra trùng lặp enrollment
+        
         Map<String, String> params = Map.of(
                 "studentId", studentId.toString(),
                 "courseId", courseId.toString()
@@ -77,7 +76,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new IllegalStateException("Student đã enroll course này rồi");
         }
 
-        // Tạo enrollment mới
         Enrollment e = new Enrollment();
         e.setStudentId(student);
         e.setCourseId(course);

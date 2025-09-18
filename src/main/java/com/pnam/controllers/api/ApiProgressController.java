@@ -33,7 +33,6 @@ public class ApiProgressController {
     @Autowired
     private UserService userService;
 
-    // ===== GET MY PROGRESS =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @GetMapping("/my/{enrollmentId}")
     public ResponseEntity<List<Progress>> myProgress(@PathVariable("enrollmentId") Long enrollmentId,
@@ -57,7 +56,6 @@ public class ApiProgressController {
         return ResponseEntity.ok(progressService.getProgressByEnrollment(enrollmentId));
     }
 
-    // ===== UPDATE PROGRESS (Student) =====
     @PreAuthorize("hasAuthority('STUDENT')")
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable("id") Long id,
@@ -86,7 +84,6 @@ public class ApiProgressController {
         return ResponseEntity.ok(dbP);
     }
 
-    // ===== ADMIN: DELETE PROGRESS =====
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {

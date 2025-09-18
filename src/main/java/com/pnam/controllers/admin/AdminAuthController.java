@@ -10,7 +10,6 @@ public class AdminAuthController {
 
     @GetMapping("/login")
     public String login() {
-        // Trả về file templates/admin/login.html
         return "admin/login";
     }
 }

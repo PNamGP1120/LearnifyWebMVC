@@ -29,7 +29,6 @@ public class AdminCategoryController {
         binder.setValidator(categoryValidator);
     }
 
-    // ============ Danh sách Category ============
     @GetMapping
     public String list(@RequestParam(required = false) Map<String, String> params, Model model) {
         if (params == null) {
@@ -54,7 +53,6 @@ public class AdminCategoryController {
         return "admin/category/list";
     }
 
-    // ============ Thêm Category ============
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("category", new Category());
@@ -71,7 +69,6 @@ public class AdminCategoryController {
         return "redirect:/admin/categories";
     }
 
-    // ============ Sửa Category ============
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable("id") Long id, Model model) {
         Category c = categoryService.findById(id);
@@ -94,7 +91,6 @@ public class AdminCategoryController {
         return "redirect:/admin/categories";
     }
 
-    // ============ Xoá Category ============
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable("id") Long id) {
         categoryService.deleteCategory(id);

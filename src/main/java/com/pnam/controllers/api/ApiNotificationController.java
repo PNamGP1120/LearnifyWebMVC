@@ -28,7 +28,6 @@ public class ApiNotificationController {
     @Autowired
     private UserService userService;
 
-    // ===== STUDENT/INSTRUCTOR: GET MY NOTIFICATIONS =====
     @PreAuthorize("hasAnyAuthority('STUDENT','INSTRUCTOR')")
     @GetMapping("/my")
     public ResponseEntity<List<Notification>> myNotifications(Principal principal) {
@@ -36,7 +35,6 @@ public class ApiNotificationController {
         return ResponseEntity.ok(notificationService.getNotificationsByUser(me.getId()));
     }
 
-    // ===== STUDENT/INSTRUCTOR: MARK AS READ =====
     @PreAuthorize("hasAnyAuthority('STUDENT','INSTRUCTOR')")
     @PutMapping("/{id}/read")
     public ResponseEntity<?> markAsRead(@PathVariable("id") Long id, Principal principal) {
@@ -56,14 +54,12 @@ public class ApiNotificationController {
         return ResponseEntity.ok(n);
     }
 
-    // ===== ADMIN: GET ALL NOTIFICATIONS =====
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping
     public ResponseEntity<List<Notification>> getAllNotifications() {
         return ResponseEntity.ok(notificationService.getAllNotifications());
     }
 
-    // ===== ADMIN: SEND NOTIFICATION TO USER =====
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping
     public ResponseEntity<?> createNotification(@Valid @RequestBody Notification n,
@@ -86,7 +82,6 @@ public class ApiNotificationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // ===== ADMIN: DELETE NOTIFICATION =====
     @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteNotification(@PathVariable("id") Long id) {

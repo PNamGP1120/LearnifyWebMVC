@@ -61,7 +61,6 @@ public class AdminCourseController {
         binder.setValidator(lessonValidator);
     }
 
-    // ==================== Danh sách Course ====================
     @GetMapping
     public String list(@RequestParam(required = false) Map<String, String> params, Model model) {
         if (params == null) {
@@ -86,7 +85,6 @@ public class AdminCourseController {
         return "admin/course/list";
     }
 
-    // ==================== Thêm Course ====================
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("course", new Course());
@@ -104,7 +102,6 @@ public class AdminCourseController {
             return "admin/course/form";
         }
 
-        // set ngày mặc định
         c.setCreatedAt(new Date());
         c.setUpdatedAt(new Date());
 
@@ -117,7 +114,6 @@ public class AdminCourseController {
         return "redirect:/admin/courses";
     }
 
-    // ==================== Sửa Course ====================
     @PostMapping("/{id}/edit")
     public String edit(@PathVariable("id") Long id,
             @ModelAttribute("course") @Valid Course c,
@@ -134,28 +130,26 @@ public class AdminCourseController {
         }
 
         c.setId(id);
-        c.setCreatedAt(dbCourse.getCreatedAt());   // giữ nguyên createdAt cũ
-        c.setUpdatedAt(new Date());               // cập nhật updatedAt mới
+        c.setCreatedAt(dbCourse.getCreatedAt());
+        c.setUpdatedAt(new Date());
 
         if (c.getCoverFile() != null && !c.getCoverFile().isEmpty()) {
             String url = courseService.uploadCoverImage(c.getCoverFile());
             c.setCoverImage(url);
         } else {
-            c.setCoverImage(dbCourse.getCoverImage()); // giữ ảnh cũ nếu không upload mới
+            c.setCoverImage(dbCourse.getCoverImage());
         }
 
         courseService.saveCourse(c);
         return "redirect:/admin/courses";
     }
 
-    // ==================== Xoá Course ====================
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable("id") Long id) {
         courseService.deleteCourse(id);
         return "redirect:/admin/courses";
     }
 
-    // ==================== Danh sách Section theo Course ====================
     @GetMapping("/{courseId}/sections")
     public String sectionList(@PathVariable("courseId") Long courseId,
             @RequestParam(required = false) Map<String, String> params,
@@ -165,7 +159,6 @@ public class AdminCourseController {
             return "redirect:/admin/courses";
         }
 
-        // thêm filter courseId vào params
         if (params == null || params.isEmpty()) {
             params = Map.of("courseId", String.valueOf(courseId));
         } else {
@@ -189,7 +182,6 @@ public class AdminCourseController {
         return "admin/course/section-list";
     }
 
-    // ==================== Thêm Section ====================
     @GetMapping("/{courseId}/sections/add")
     public String addSectionForm(@PathVariable("courseId") Long courseId, Model model) {
         model.addAttribute("section", new CourseSection());
@@ -211,7 +203,6 @@ public class AdminCourseController {
         return "redirect:/admin/courses/" + courseId + "/sections";
     }
 
-    // ==================== Danh sách Lesson theo Section ====================
     @GetMapping("/sections/{sectionId}/lessons")
     public String lessonList(@PathVariable("sectionId") Long sectionId,
             @RequestParam(required = false) Map<String, String> params,
@@ -244,7 +235,6 @@ public class AdminCourseController {
         return "admin/course/lesson-list";
     }
 
-    // ==================== Thêm Lesson ====================
     @GetMapping("/sections/{sectionId}/lessons/add")
     public String addLessonForm(@PathVariable("sectionId") Long sectionId, Model model) {
         model.addAttribute("lesson", new Lesson());

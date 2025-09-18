@@ -40,9 +40,8 @@ public abstract class BaseRepository<T, ID extends Serializable> {
         }
     }
 
-    /** 
-     * Helper: lấy page và pageSize từ params 
-     */
+
+    
     protected int getPage(Map<String, String> params) {
         return params != null && params.containsKey("page") 
                 ? Integer.parseInt(params.get("page")) : 1;

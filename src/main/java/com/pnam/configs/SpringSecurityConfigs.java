@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,6 +29,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableTransactionManagement
+@EnableMethodSecurity(prePostEnabled = true)
 @ComponentScan(basePackages = {
     "com.pnam.controllers",
     "com.pnam.repositories",
@@ -35,7 +37,6 @@ import java.util.List;
 })
 public class SpringSecurityConfigs {
 
-    /* ========== Common Beans ========== */
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -54,7 +55,7 @@ public class SpringSecurityConfigs {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // React frontend
+        config.setAllowedOrigins(List.of("http://localhost:3000")); // React FE
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));
@@ -80,7 +81,6 @@ public class SpringSecurityConfigs {
         return new JwtFilter(userService);
     }
 
-    /* ========== API Security (JWT) ========== */
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurity(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
@@ -93,33 +93,30 @@ public class SpringSecurityConfigs {
                 .accessDeniedHandler((req, res, e) -> res.sendError(HttpServletResponse.SC_FORBIDDEN))
                 )
                 .authorizeHttpRequests(auth -> auth
-                // Auth
                 .requestMatchers("/api/auth/**").permitAll()
-                // Courses
-                .requestMatchers(HttpMethod.GET, "/api/courses/**")
-                .hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/courses/**")
-                .hasAnyAuthority("INSTRUCTOR", "ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/courses/**")
-                .hasAnyAuthority("INSTRUCTOR", "ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/courses/**")
-                .hasAnyAuthority("INSTRUCTOR", "ADMIN")
-                // Student APIs
+                .requestMatchers("/api/payments/vnpay-return", "/api/payments/vnpay-ipn").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/categories/**")
+                .permitAll()
+
+                // STUDENT
+                .requestMatchers("/api/payments/**").hasAuthority("STUDENT")
                 .requestMatchers("/api/student/**").hasAuthority("STUDENT")
-                .requestMatchers("/api/cart/**", "/api/wishlist/**", "/api/rating/**")
-                .hasAuthority("STUDENT")
+                .requestMatchers("/api/cart/**", "/api/wishlist/**", "/api/rating/**").hasAuthority("STUDENT")
                 .requestMatchers(HttpMethod.POST, "/api/enrollments/**").hasAuthority("STUDENT")
                 .requestMatchers(HttpMethod.GET, "/api/enrollments/my/**").hasAuthority("STUDENT")
-                .requestMatchers("/api/payments/**").hasAuthority("STUDENT")
                 .requestMatchers("/api/stats/student/**").hasAuthority("STUDENT")
-                // Instructor APIs
-                .requestMatchers("/api/instructor/**").hasAuthority("INSTRUCTOR")
+                // COURSES
+                .requestMatchers(HttpMethod.GET, "/api/courses/**").hasAnyAuthority("STUDENT", "INSTRUCTOR", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/courses/**").hasAnyAuthority("INSTRUCTOR", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/courses/**").hasAnyAuthority("INSTRUCTOR", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/courses/**").hasAnyAuthority("INSTRUCTOR", "ADMIN")
+                // INSTRUCTOR + PENDING_INSTRUCTOR
+                .requestMatchers("/api/instructor/**").hasAnyAuthority("INSTRUCTOR", "PENDING_INSTRUCTOR")
                 .requestMatchers("/api/enrollments/course/**").hasAuthority("INSTRUCTOR")
                 .requestMatchers("/api/stats/instructor/**").hasAuthority("INSTRUCTOR")
-                // Admin APIs
+                // ADMIN
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                 .requestMatchers("/api/stats/admin/**").hasAuthority("ADMIN")
-                // Default
                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -127,7 +124,6 @@ public class SpringSecurityConfigs {
         return http.build();
     }
 
-    /* ========== Thymeleaf Security (Form login) ========== */
     @Bean
     @Order(2)
     public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {

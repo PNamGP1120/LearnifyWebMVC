@@ -59,29 +59,24 @@ public class Course implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ===== ID =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ===== TITLE =====
     @NotBlank(message = "{course.title.notBlank}")
     @Size(max = 200, message = "{course.title.size}")
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    // ===== SLUG =====
     @NotBlank(message = "{course.slug.notBlank}")
     @Size(max = 220, message = "{course.slug.size}")
     @Column(name = "slug", nullable = false, length = 220)
     private String slug;
 
-    // ===== DESCRIPTION =====
     @Size(max = 65535, message = "{course.description.size}")
     @Lob
     private String description;
 
-    // ===== COVER IMAGE =====
     @Size(max = 255, message = "{course.coverImage.size}")
     @Column(name = "cover_image")
     private String coverImage;
@@ -91,31 +86,25 @@ public class Course implements Serializable {
     @jakarta.xml.bind.annotation.XmlTransient
     private MultipartFile coverFile;
 
-    // ===== INTRO VIDEO URL =====
     @Size(max = 255, message = "{course.introVideoUrl.size}")
     @Column(name = "intro_video_url")
     private String introVideoUrl;
 
-    // ===== PRICE =====
     @DecimalMin(value = "0.0", inclusive = true, message = "{course.price.min}")
     private BigDecimal price;
 
-    // ===== CURRENCY =====
     @Size(max = 3, message = "{course.currency.size}")
     private String currency;
 
-    // ===== DURATION =====
     @NotNull(message = "{course.duration.notNull}")
     @Positive(message = "{course.duration.positive}")
     @Column(name = "duration_hours", nullable = false)
     private BigDecimal durationHours;
 
-    // ===== STATUS =====
     @NotBlank(message = "{course.status.notBlank}")
     @Size(max = 11, message = "{course.status.size}")
     private String status;
 
-    // ===== TIMESTAMP =====
     @NotNull(message = "{course.createdAt.notNull}")
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false)
@@ -126,7 +115,6 @@ public class Course implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private Date updatedAt = new Date();
 
-    // ===== RELATIONSHIPS =====
     @OneToMany(mappedBy = "courseId", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Wishlist> wishlistSet;
@@ -161,7 +149,6 @@ public class Course implements Serializable {
     @JsonIgnore
     private Set<ChatThread> chatThreadSet;
 
-    // ===== Constructors =====
     public Course() {
     }
 
@@ -354,15 +341,11 @@ public class Course implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof Course)) {
             return false;
         }
         Course other = (Course) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override
@@ -370,16 +353,10 @@ public class Course implements Serializable {
         return "com.pnam.pojo.Course[ id=" + id + " ]";
     }
 
-    /**
-     * @return the coverFile
-     */
     public MultipartFile getCoverFile() {
         return coverFile;
     }
 
-    /**
-     * @param coverFile the coverFile to set
-     */
     public void setCoverFile(MultipartFile coverFile) {
         this.coverFile = coverFile;
     }

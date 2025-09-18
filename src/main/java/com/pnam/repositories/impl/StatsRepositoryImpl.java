@@ -31,8 +31,6 @@ public class StatsRepositoryImpl implements StatsRepository {
         }
     }
 
-    // ==== ADMIN ====
-
     @Override
     public List<Object[]> statsUsersByRole(Map<String, String> filters) {
         Session s = getSession();
@@ -98,8 +96,9 @@ public class StatsRepositoryImpl implements StatsRepository {
             }
         }
 
-        if (!predicates.isEmpty())
+        if (!predicates.isEmpty()) {
             q.where(b.and(predicates.toArray(new Predicate[0])));
+        }
 
         q.groupBy(monthExp);
         q.orderBy(b.asc(monthExp));
@@ -153,8 +152,6 @@ public class StatsRepositoryImpl implements StatsRepository {
         query.setMaxResults(limit);
         return query.getResultList();
     }
-
-    // ==== INSTRUCTOR ====
 
     @Override
     public List<Object[]> statsEnrollmentsByCourse(Map<String, String> filters) {
@@ -222,16 +219,15 @@ public class StatsRepositoryImpl implements StatsRepository {
             }
         }
 
-        if (!predicates.isEmpty())
+        if (!predicates.isEmpty()) {
             q.where(b.and(predicates.toArray(new Predicate[0])));
+        }
 
         q.groupBy(monthExp);
         q.orderBy(b.asc(monthExp));
 
         return s.createQuery(q).getResultList();
     }
-
-    // ==== STUDENT ====
 
     @Override
     public List<Object[]> statsCoursesByStudent(Map<String, String> filters) {
@@ -259,14 +255,23 @@ public class StatsRepositoryImpl implements StatsRepository {
         CriteriaQuery<Object[]> q = b.createQuery(Object[].class);
 
         Root<Progress> root = q.from(Progress.class);
-        Join<Progress, Course> joinC = root.join("courseId", JoinType.INNER);
+        Join<Object, Enrollment> joinE = root.join("enrollmentId", JoinType.INNER);
+        Join<Object, Course> joinC = joinE.join("courseId", JoinType.INNER);
 
-        q.multiselect(joinC.get("title"), root.get("progressPercent"));
+        q.multiselect(
+                joinC.get("title"),
+                b.count(root.get("id")) 
+        );
+
+        Predicate p = b.conjunction();
 
         if (filters != null && filters.containsKey("studentId")) {
-            q.where(b.equal(root.get("studentId").get("id"),
+            p = b.and(p, b.equal(joinE.get("studentId").get("id"),
                     Long.parseLong(filters.get("studentId"))));
         }
+
+        q.where(p);
+        q.groupBy(joinC.get("title"));
 
         return s.createQuery(q).getResultList();
     }

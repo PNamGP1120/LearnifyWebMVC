@@ -14,21 +14,17 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.util.Date;
 
-/**
- *
- * @author pnam
- */
 public class JwtUtils {
 
-    private static final String SECRET = "12576576587689778901222222222222"; // 32 ký tự
-    private static final long EXPIRATION_MS = 86400000; // 1 ngày
+    private static final String SECRET = "12576576587689778901222222222222";
+    private static final long EXPIRATION_MS = 86400000; 
 
     public static String generateToken(String username, String role) throws Exception {
         JWSSigner signer = new MACSigner(SECRET);
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(username)
-                .claim("role", role) // thêm role
+                .claim("role", role) 
                 .expirationTime(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .issueTime(new Date())
                 .build();

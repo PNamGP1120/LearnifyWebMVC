@@ -25,46 +25,38 @@ public class Lesson implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ===== ID =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ===== TITLE =====
     @NotBlank(message = "{lesson.title.notBlank}")
     @Size(max = 200, message = "{lesson.title.size}")
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    // ===== CONTENT_URL =====
     @NotBlank(message = "{lesson.contentUrl.notBlank}")
     @Size(max = 255, message = "{lesson.contentUrl.size}")
     @Column(name = "content_url", nullable = false, length = 255)
     private String contentUrl;
 
-    // ===== CONTENT_TYPE =====
     @NotBlank(message = "{lesson.contentType.notBlank}")
     @Size(max = 5, message = "{lesson.contentType.size}")
     @Column(name = "content_type", nullable = false, length = 5)
     private String contentType;
 
-    // ===== DURATION =====
     @NotNull(message = "{lesson.durationMin.notNull}")
     @Positive(message = "{lesson.durationMin.positive}")
     @Column(name = "duration_min", nullable = false)
     private int durationMin;
 
-    // ===== ORDER_INDEX =====
     @NotNull(message = "{lesson.orderIndex.notNull}")
     @Positive(message = "{lesson.orderIndex.positive}")
     @Column(name = "order_index", nullable = false)
     private int orderIndex;
 
-    // ===== PREVIEWABLE =====
     @Column(name = "previewable", nullable = false)
     private boolean previewable;
 
-    // ===== RELATIONSHIPS =====
     @ManyToOne(optional = false)
     @JoinColumn(name = "section_id", referencedColumnName = "id")
     @JsonIgnore
@@ -74,7 +66,6 @@ public class Lesson implements Serializable {
     @JsonIgnore
     private Set<Progress> progressSet;
 
-    // ===== Constructors =====
     public Lesson() {
     }
 
@@ -174,7 +165,6 @@ public class Lesson implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof Lesson)) {
             return false;
         }

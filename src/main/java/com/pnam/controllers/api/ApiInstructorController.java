@@ -1,13 +1,15 @@
 package com.pnam.controllers.api;
 
+import com.pnam.dto.InstructorProfileUpdateDTO;
 import com.pnam.dto.UserProfileUpdateDTO;
 import com.pnam.pojo.Course;
+import com.pnam.pojo.InstructorProfile;
 import com.pnam.pojo.User;
 import com.pnam.services.CourseService;
+import com.pnam.services.InstructorProfileService;
 import com.pnam.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -15,8 +17,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/instructor")
@@ -29,7 +33,9 @@ public class ApiInstructorController {
     @Autowired
     private CourseService courseService;
 
-    // ===== GET MY PROFILE =====
+    @Autowired
+    private InstructorProfileService instructorProfileService;
+
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(Principal principal) {
@@ -37,7 +43,6 @@ public class ApiInstructorController {
         return ResponseEntity.ok(instructor);
     }
 
-    // ===== UPDATE PROFILE =====
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     @PutMapping("/profile")
     public ResponseEntity<?> updateInstructorProfile(@Valid @RequestBody UserProfileUpdateDTO dto,
@@ -63,7 +68,45 @@ public class ApiInstructorController {
         return ResponseEntity.ok(instructor);
     }
 
-    // ===== GET MY COURSES =====
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR','PENDING_INSTRUCTOR')")
+    @GetMapping("/profile/details")
+    public ResponseEntity<?> getProfileDetails(Principal principal) {
+        User user = userService.getUserByUsername(principal.getName());
+        InstructorProfile profile = instructorProfileService.getProfileById(user.getId());
+
+        if (profile == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Instructor profile not found"));
+        }
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("user", user);
+        res.put("profile", profile);
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR','PENDING_INSTRUCTOR')")
+    @PutMapping("/profile/details")
+    public ResponseEntity<?> updateProfileDetails(
+            @Valid @RequestBody InstructorProfileUpdateDTO dto,
+            Principal principal
+    ) {
+        User user = userService.getUserByUsername(principal.getName());
+        InstructorProfile profile = instructorProfileService.getProfileById(user.getId());
+
+        if (profile == null) {
+            profile = new InstructorProfile(user.getId(), false);
+        }
+
+        profile.setBio(dto.getBio());
+        profile.setCertifications(dto.getCertifications());
+
+        instructorProfileService.updateProfile(profile);
+
+        return ResponseEntity.ok(profile);
+    }
+
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     @GetMapping("/courses")
     public ResponseEntity<List<Course>> getMyCourses(@RequestParam(required = false) Map<String, String> params,
@@ -73,7 +116,6 @@ public class ApiInstructorController {
         return ResponseEntity.ok(courseService.getCourses(params));
     }
 
-    // ===== ADMIN: LIST ALL INSTRUCTORS =====
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<List<User>> listInstructors(@RequestParam(required = false) Map<String, String> params) {
@@ -81,7 +123,6 @@ public class ApiInstructorController {
         return ResponseEntity.ok(userService.getUsers(params));
     }
 
-    // ===== ADMIN: LOCK AN INSTRUCTOR =====
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}/lock")
     public ResponseEntity<?> lockInstructor(@PathVariable("id") Long id) {
@@ -89,7 +130,6 @@ public class ApiInstructorController {
         return ResponseEntity.ok(Map.of("message", "Đã khóa instructor có ID = " + id));
     }
 
-    // ===== ADMIN: UNLOCK AN INSTRUCTOR =====
     @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}/unlock")
     public ResponseEntity<?> unlockInstructor(@PathVariable("id") Long id) {
